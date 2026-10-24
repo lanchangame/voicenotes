@@ -408,7 +408,7 @@ function startFinalRecollectionFromUI() {
 
     [
         "continue-overlay", "recollection-overlay", "device-check-overlay",
-        "intro-overlay", "tutorial-overlay", "load-overlay"
+        "intro-overlay", "tutorial-overlay"
     ].forEach(id => {
         const element = document.getElementById(id);
         if (element) element.style.display = "none";

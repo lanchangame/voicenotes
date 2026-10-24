@@ -1,0 +1,2706 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>声を聴かせて、ランスロット！</title>
+<style>
+:root{--main:#7897a5;--main-dark:#506c78;--main-soft:#edf3f5;--main-pale:#f5f8f9;--text:#394b53;--text-soft:#687b84;--muted:#8b9aa1;--muted-light:#aab5ba;--line:#d9e2e6;--line-strong:#c5d2d8;--surface:#fff;--surface-soft:#f7f9fa;--surface-hover:#f0f5f6;--correct:#587887;--wrong:#ad7070;--opt-bg:#fff;--opt-hover:#f1f5f6;--selected:#eaf1f4;--love-hue:200;--love-light:92%;--love-sat:20%;--gold:#7897a5;--note-bg:#f1f6f4;--note-surface:#fbfdfc;--note-line:#ceddd8;--note-soft:#e7f0ed;--note-active:#dceee9;--note-text:#48625c}
+body{background:#edf3f5;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Kaku Gothic ProN","Yu Gothic","YuGothic",Meiryo,sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;color:var(--text);overflow:hidden}
+#bg-layer{position:fixed;inset:0;background:radial-gradient(circle at 20% 15%,rgba(255,255,255,.95) 0%,rgba(255,255,255,0) 38%),linear-gradient(135deg,#edf3f5 0%,#f7f9fa 48%,#e9f0f2 100%);z-index:-1;transition:2s ease}
+#device-check-overlay,#intro-overlay,#tutorial-overlay,#load-overlay{position:fixed;inset:0;background:rgba(244,248,249,.98);display:flex;justify-content:center;align-items:center;text-align:center;color:var(--text)}
+#device-check-overlay{z-index:200}
+#intro-overlay,#tutorial-overlay,#load-overlay{z-index:100;display:none}
+.device-box{width:min(520px,82vw);border:1px solid var(--line);padding:42px;border-radius:16px;background:rgba(255,255,255,.96);box-shadow:0 18px 55px rgba(68,91,101,.10)}
+.content-box{max-width:700px;width:90%;line-height:2.05;max-height:90vh;overflow-y:auto;padding:30px;box-sizing:border-box}
+.title-image{display:block;width:min(620px,92%);height:auto;margin:0 auto 28px}
+.title-image-fallback{display:none;margin:0 auto 28px;color:var(--main-dark);font-size:clamp(1.35rem,3vw,2rem);line-height:1.6;font-weight:700}
+#game-container{width:98vw;max-width:1200px;height:92vh;background:var(--surface);display:none;border:1px solid var(--line-strong);border-radius:12px;overflow:hidden;color:var(--text);box-shadow:0 24px 70px rgba(68,91,101,.14),0 2px 10px rgba(68,91,101,.05)}
+#main-screen{flex:2;display:flex;flex-direction:column;border-right:1px solid var(--line);min-width:0;height:100%;background:var(--surface)}
+#progress-bar{height:34px;min-height:34px;flex:0 0 34px;background:var(--surface-soft);color:var(--muted);display:flex;justify-content:center;align-items:center;font-size:.72em;letter-spacing:.14em;border-bottom:1px solid var(--line);box-sizing:border-box}
+#progress-current{color:var(--main-dark);font-weight:700}
+.status-bar{height:42px;min-height:42px;flex:0 0 42px;box-sizing:border-box;padding:0 18px;background:var(--surface);color:var(--text-soft);display:flex;align-items:center;justify-content:center;font-size:.72em;letter-spacing:.08em;border-bottom:1px solid var(--line)}
+.ending-collection,.ending-badge-row{display:flex;align-items:center;justify-content:center}
+.ending-collection{gap:10px}.ending-badge-row{gap:7px}
+.ending-collection-label{color:var(--muted);font-size:.72rem;font-weight:700;letter-spacing:.13em;white-space:nowrap}
+.ending-progress-badge{display:inline-flex;align-items:center;justify-content:center;min-width:46px;height:22px;padding:0 5px;box-sizing:border-box;border-radius:4px;border:1px solid var(--line-strong);background:var(--surface-soft);color:var(--muted);font-size:.62rem;font-weight:700;letter-spacing:.04em;white-space:nowrap;transition:.2s}
+.ending-progress-badge.unlocked{background:var(--main-soft);border-color:var(--main);color:var(--main-dark)}
+.ending-progress-badge.gold.unlocked{background:var(--main-soft);border-color:var(--main-dark)}
+.ending-count{min-width:32px;color:var(--main-dark);font-size:.72rem;font-weight:700;letter-spacing:.05em;white-space:nowrap}
+#check-action{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:24px}
+#check-action .btn-style{margin:0;min-width:220px}#check-action #error-msg{margin-top:10px}
+#main-view-tabs{height:50px;min-height:50px;flex:0 0 50px;display:flex;box-sizing:border-box;background:#eaf3f7;border-bottom:1px solid var(--line);padding:7px 20px 0;gap:8px}
+.main-view-tab{flex:1;border:1px solid transparent;border-bottom:none;background:#f2f8fa;color:var(--muted);font-family:inherit;font-size:.84rem;font-weight:700;letter-spacing:.08em;cursor:pointer;transition:.18s;border-radius:8px 8px 0 0}
+.main-view-tab:hover{background:#e0eff5;color:var(--main-dark)}.main-view-tab.active{background:#dceef5;color:var(--main-dark);border-color:var(--line-strong);box-shadow:inset 0 3px 0 var(--main)}
+#play-view{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;background:var(--surface)}
+#display{height:auto;min-height:0;max-height:none;flex:0 0 58%;display:flex;flex-direction:column;justify-content:flex-start;align-items:center;gap:12px;padding:24px 34px 20px;background:var(--surface);overflow-y:auto;box-sizing:border-box}
+#chara-header{width:90%;flex:0 0 auto;display:flex;align-items:center;box-sizing:border-box;min-height:30px}#speaker-name{font-weight:700;letter-spacing:.1em;color:var(--main-dark)}
+.bubble{background:var(--surface);border-left:4px solid var(--main);padding:18px 21px;width:90%;box-sizing:border-box;font-size:1.14rem;line-height:1.9;text-align:left;color:var(--text)}
+#vane-thought-block,#story-block,#resolution-block{width:90%;box-sizing:border-box;flex:0 0 auto}
+.block-label{height:18px;line-height:18px;box-sizing:border-box;font-size:.68em;font-weight:700;letter-spacing:.1em;color:var(--muted);margin-bottom:7px}
+.thought-bubble{background:var(--surface-soft);border-left:3px solid var(--line-strong);padding:13px 16px;box-sizing:border-box;line-height:1.75;text-align:left;color:var(--text-soft);font-size:.93em}
+.story-bubble{background:var(--main-pale);border:1px solid var(--line);border-radius:7px;padding:14px 16px;box-sizing:border-box;line-height:1.9;text-align:left;color:var(--text)}
+.resolution-bubble{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--main);border-radius:7px;padding:15px 17px;box-sizing:border-box;line-height:1.85;text-align:left;color:var(--text)}
+.understanding-item{padding:4px 0 10px}.understanding-lead{font-size:1.02em;margin-bottom:12px}.understanding-copy{color:var(--text-soft);line-height:1.9}
+.understanding-symbol{margin-top:18px;color:var(--main-dark);font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace;font-size:1.28em;font-weight:700;letter-spacing:.12em}
+.understanding-bridge{margin-top:13px;color:var(--text-soft)}.understanding-word{margin-top:8px;font-size:1.45em;font-weight:700;letter-spacing:.05em;color:var(--main-dark)}
+.understanding-divider{width:100%;height:1px;margin:22px 0;background:var(--line)}.selected-reply{font-weight:700;margin-bottom:12px;color:var(--text)}.final-resolve-line{font-size:1.3em;font-weight:700;margin-top:20px;color:var(--main-dark)}
+.symbol,.resolved,.wrong-resolved{cursor:pointer;transition:.2s;padding:1px 5px;border-radius:4px}
+.symbol:hover,.resolved:hover,.wrong-resolved:hover{background:var(--main-soft);outline:1px solid var(--line-strong)}
+.resolved{color:var(--main-dark);font-weight:700}.wrong-resolved{color:var(--wrong);font-weight:700;text-decoration:underline wavy var(--wrong)}
+.symbol{color:var(--main-dark);font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace;background:var(--main-soft);font-weight:700}
+.controls{flex:1 1 auto;min-height:0;height:auto;max-height:none;box-sizing:border-box;padding:16px 34px 20px;background:var(--surface-soft);border-top:1px solid var(--line);overflow-y:auto}
+.opt-btn{width:100%;min-height:46px;box-sizing:border-box;padding:12px 16px;margin:6px 0;border:1px solid var(--line);border-left:4px solid var(--line-strong);background:var(--opt-bg);cursor:pointer;font-family:inherit;font-size:.96rem;line-height:1.55;transition:.18s;border-radius:6px;color:var(--text);text-align:left}
+.opt-btn:hover:not(:disabled){border-color:var(--line-strong);border-left-color:var(--main);background:var(--opt-hover);transform:translateX(2px)}.opt-btn:disabled{cursor:default;opacity:.62}.opt-btn.my-choice{border:1px solid var(--line-strong);border-left:4px solid var(--main);background:var(--selected);font-weight:700}
+#log-section{flex:1 1 auto;min-height:0;display:none;flex-direction:column;background:var(--surface);box-sizing:border-box;overflow:hidden}
+#log-header{height:42px;min-height:42px;flex:0 0 42px;display:flex;align-items:center;padding:0 38px;box-sizing:border-box;background:var(--surface);border-bottom:1px solid var(--line);color:var(--muted);font-size:.68em;font-weight:700;letter-spacing:.1em}
+#log-panel{display:block;flex:1;min-height:0;overflow-y:auto;padding:24px 40px 36px;box-sizing:border-box;background:var(--surface)}
+.log-empty{color:var(--muted);font-size:.84em;line-height:1.8;text-align:center;padding:40px 0}
+.log-entry{position:relative;width:92%;margin:0 auto;padding:0 0 30px 30px;border-left:2px solid var(--line);box-sizing:border-box;transition:background .3s}
+.log-entry::before{content:"";position:absolute;top:6px;left:-6px;width:10px;height:10px;border-radius:50%;background:var(--surface);border:2px solid var(--main);box-sizing:border-box}.log-entry:last-child{padding-bottom:8px}.log-entry.log-focus{background:var(--main-pale);border-radius:6px}
+.log-scene{display:inline-flex;align-items:center;min-height:24px;margin-bottom:12px;padding:0 9px;border-radius:12px;background:var(--main-soft);color:var(--main-dark);font-size:.66em;font-weight:700;letter-spacing:.1em}
+.log-speaker{margin-bottom:7px;color:var(--main-dark);font-size:.72em;font-weight:700;letter-spacing:.08em}.log-dialogue{color:var(--text);font-size:.94em;line-height:1.85;padding-right:8px}
+.log-thought-label{margin-top:14px;margin-bottom:5px;color:var(--muted);font-size:.66em;font-weight:700;letter-spacing:.08em}.log-thought{padding:10px 13px;background:var(--surface-soft);border-radius:6px;color:var(--text-soft);font-size:.84em;line-height:1.7}
+.log-symbol-active{outline:2px solid var(--main);background:var(--main-soft);color:var(--main-dark)}.log-symbol-active:hover{outline:2px solid var(--main-dark);background:var(--selected)}
+#dictionary{flex:0 0 330px;min-width:300px;height:100%;display:flex;flex-direction:column;background:var(--note-bg);border-left:1px solid var(--note-line);box-sizing:border-box}
+#dict-header{height:76px;min-height:76px;flex:0 0 76px;box-sizing:border-box;padding:10px 24px 8px;border-bottom:1px solid var(--note-line);background:var(--note-surface);display:flex;flex-direction:column;justify-content:center}
+#dict-header h3{margin:0;font-size:1.02em;letter-spacing:.04em;color:var(--note-text);line-height:1.2}#dict-header p{margin:5px 0 0;font-size:.67em;color:var(--muted);line-height:1.35}
+#dict-editor-section{flex:0 0 500px;min-height:500px;box-sizing:border-box;border-bottom:1px solid var(--note-line);background:var(--note-bg);display:flex;flex-direction:column}
+#dict-editor-label{height:34px;min-height:34px;flex:0 0 34px;display:flex;align-items:center;padding:0 24px;box-sizing:border-box;color:var(--note-text);font-size:.68em;font-weight:700;letter-spacing:.1em}
+#dict-list{flex:1;min-height:0;padding:8px 20px 18px;display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;box-sizing:border-box}
+.dict-placeholder{width:100%;margin-top:26px;text-align:center;color:var(--muted);line-height:1.9;font-size:.86em}.dict-placeholder-symbol{font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace;font-size:1.8em;color:var(--muted-light);margin-bottom:16px}
+.dict-entry{width:100%;box-sizing:border-box;padding:15px 17px 17px;background:var(--note-surface);border:1px solid var(--note-line);border-radius:8px;transition:background .5s;box-shadow:0 4px 14px rgba(68,91,101,.04)}
+.dict-entry.correct{border-left:4px solid var(--main-dark);background:#edf5f2}.dict-entry.guessing{border-left:4px solid var(--main);background:var(--note-surface)}.dict-entry.highlight-flash{background:var(--note-soft)}
+.dict-entry label.dict-symbol-label{font-size:1.5em;color:var(--note-text);display:block;margin-bottom:12px;font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace;font-weight:700;text-align:center;letter-spacing:.12em}
+.dict-field-label{margin:0 0 6px;color:var(--muted);font-size:.65em;font-weight:700;letter-spacing:.1em}
+.dict-entry input{width:100%;box-sizing:border-box;padding:10px 11px;border:1px solid var(--note-line);background:#fff;font-size:.96rem;outline:none;border-radius:6px;font-family:inherit;color:var(--text)}.dict-entry input:focus{border-color:var(--main);box-shadow:0 0 0 3px rgba(120,151,165,.10)}.dict-entry input.wrong-text{color:var(--wrong);font-weight:700;border-color:var(--wrong)}
+.dict-status{min-height:18px;font-size:.72em;color:var(--muted);margin-top:8px;text-align:left}.dict-entry.guessing .dict-status{color:var(--note-text)}.dict-entry.correct .dict-status{color:var(--main-dark);font-weight:700}
+.dict-vane-memo{margin-top:12px;padding:10px 11px;background:var(--note-soft);border-radius:6px;color:var(--note-text)}.dict-vane-memo-title{margin-bottom:5px;color:var(--muted);font-size:.62em;font-weight:700;letter-spacing:.1em}.dict-vane-memo-text{font-size:.78em;line-height:1.65}
+.dict-feedback{min-height:0;max-height:0;opacity:0;overflow:hidden;margin-top:0;color:var(--note-text);font-size:.72em;font-style:italic;line-height:1.6;transition:opacity .2s ease,max-height .2s ease,margin-top .2s ease}.dict-feedback.show{max-height:42px;opacity:1;margin-top:8px}
+.dict-records{margin-top:14px;padding-top:12px;border-top:1px solid var(--note-line)}.dict-records-title{margin-bottom:8px;color:var(--muted);font-size:.65em;font-weight:700;letter-spacing:.1em}.dict-record-list{display:flex;flex-direction:column;gap:7px}
+.dict-record-item{width:100%;box-sizing:border-box;border:1px solid var(--note-line);background:var(--note-surface);color:var(--text-soft);padding:8px 9px;border-radius:5px;font-family:inherit;text-align:left;cursor:pointer;transition:.15s}.dict-record-item:hover{background:var(--note-soft);border-color:#b9cec7}
+.dict-record-scene{display:block;margin-bottom:4px;color:var(--note-text);font-size:.62em;font-weight:700;letter-spacing:.08em}.dict-record-text{display:block;font-size:.7em;line-height:1.6}.dict-record-word{font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace;font-weight:700;color:var(--note-text)}.dict-record-word.focus{padding:1px 3px;border-radius:3px;background:var(--note-active)}.dict-record-empty{color:var(--muted-light);font-size:.7em}
+#word-list-section{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;background:var(--note-surface);overflow:hidden}
+#word-list-header{height:38px;min-height:38px;flex:0 0 38px;display:flex;align-items:center;padding:0 24px;box-sizing:border-box;background:var(--note-soft);border-bottom:1px solid var(--note-line);color:var(--note-text);font-size:.72em;font-weight:700;letter-spacing:.1em}
+#word-list-panel{flex:1;min-height:0;overflow-y:auto;padding:8px 14px 18px;box-sizing:border-box;background:var(--note-surface)}#word-list{width:100%}
+.word-list-empty{color:var(--muted);font-size:.8em;line-height:1.8;text-align:center;padding:22px 10px}
+.word-row{width:100%;min-height:46px;box-sizing:border-box;display:grid;grid-template-columns:minmax(72px,.8fr) minmax(90px,1.25fr) auto;align-items:center;gap:8px;padding:8px 9px;border:1px solid transparent;border-bottom-color:var(--note-line);background:transparent;color:var(--text);font-family:inherit;text-align:left;cursor:pointer;transition:.15s}
+.word-row:hover:not(:disabled){background:var(--note-soft)}.word-row.active{background:var(--note-active);border-color:var(--note-line);border-radius:5px;box-shadow:inset 3px 0 0 var(--main)}.word-row.unencountered{opacity:.38;cursor:default;background:transparent}.word-row.unencountered:hover{background:transparent}.word-row:disabled{color:inherit}
+.word-symbol{font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace;font-weight:700;color:var(--note-text);letter-spacing:.04em}.word-guess{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-soft);font-size:.86em}.word-guess.understood{color:var(--main-dark);font-weight:700}.word-guess.empty{color:var(--muted-light)}
+.word-status{white-space:nowrap;font-size:.66em;color:var(--muted)}.word-status.guessing{color:var(--note-text)}.word-status.understood{color:var(--main-dark);font-weight:700}
+#understanding-flash{position:fixed;inset:0;z-index:160;display:flex;align-items:center;justify-content:center;background:rgba(239,245,246,.92);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .22s ease,visibility .22s ease}#understanding-flash.visible{opacity:1;visibility:visible;pointer-events:auto}
+.understanding-flash-inner{min-width:320px;max-width:70vw;text-align:center;padding:34px 48px;box-sizing:border-box}.understanding-flash-label{margin-bottom:24px;color:var(--muted);font-size:.7em;font-weight:700;letter-spacing:.18em}.understanding-flash-row{display:flex;align-items:center;justify-content:center;gap:22px;margin:12px 0}.understanding-flash-symbol{min-width:100px;color:var(--main-dark);font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace;font-size:1.65em;font-weight:700;letter-spacing:.12em}.understanding-flash-arrow{color:var(--muted-light);font-size:1.2em}.understanding-flash-word{min-width:100px;color:var(--main-dark);font-size:1.65em;font-weight:700;letter-spacing:.05em}.understanding-flash-copy{margin-top:24px;color:var(--text-soft);font-size:.92em}
+.hint-text{font-size:.9em;color:var(--text-soft);margin-top:15px;border-top:1px dashed var(--line-strong);padding-top:10px}
+.btn-style{padding:14px 44px;cursor:pointer;border:1px solid transparent;font-family:inherit;font-size:1em;font-weight:700;border-radius:8px;margin:10px;transition:.2s}.btn-style:hover{transform:translateY(-1px);filter:brightness(.98)}
+.reply-guide{margin:3px 0 12px;color:var(--text-soft);font-size:.82rem;line-height:1.7}
+.reply-start-button{border-left-color:var(--main);text-align:center;background:#eaf1f4;font-weight:700}
+
+
+#continue-overlay{position:fixed;inset:0;z-index:220;background:rgba(237,243,245,.98);display:none;justify-content:center;align-items:center;padding:20px;box-sizing:border-box}
+#continue-panel{width:min(790px,96vw);max-height:94vh;overflow-y:auto;background:#fff;border:1px solid var(--line-strong);border-radius:16px;box-shadow:0 22px 70px rgba(68,91,101,.15);padding:32px;box-sizing:border-box;text-align:left}
+.continue-eyebrow{font-size:.7rem;color:var(--muted);font-weight:700;letter-spacing:.15em;margin:0 0 6px}
+.continue-heading{font-size:1.55rem;color:var(--main-dark);margin:0 0 5px}
+.continue-description{font-size:.84rem;color:var(--text-soft);line-height:1.8;margin:0 0 20px}
+.continue-section-title{font-size:.86rem;font-weight:700;color:var(--main-dark);margin:18px 0 11px}
+.continue-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.continue-choice{border:1px solid var(--line-strong);border-radius:9px;background:var(--surface-soft);padding:16px 12px;text-align:left;min-height:110px;cursor:pointer;color:var(--text);font-family:inherit;transition:.16s}
+.continue-choice:hover{background:var(--main-pale);border-color:var(--main)}
+.continue-choice.active{background:#eaf3f7;border:2px solid var(--main);padding:15px 11px;box-shadow:0 0 0 2px rgba(120,151,165,.08)}
+.continue-choice:disabled{opacity:.42;cursor:not-allowed;background:var(--surface-soft);border-color:var(--line)}
+.continue-choice:focus-visible{outline:3px solid var(--main);outline-offset:2px}
+.continue-choice-label{font-weight:700;font-size:.94rem;display:block;margin:5px 0}
+.continue-choice-caption{display:block;font-size:.74rem;color:var(--text-soft);line-height:1.6}
+.continue-choice-code{display:block;font-size:.65rem;color:var(--muted);letter-spacing:.08em;font-weight:700}
+.continue-summary{margin:20px 0 8px;border:1px solid var(--line);border-radius:8px;background:var(--surface-soft);padding:12px 15px;color:var(--text-soft);font-size:.8rem;line-height:1.8}
+.continue-actions{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-top:20px}
+.continue-actions .btn-style{margin:0;font-size:.92rem;padding:12px 22px}
+.continue-actions .continue-primary{background:var(--main);color:#fff}
+.continue-actions .continue-secondary{background:var(--surface-soft);color:var(--main-dark);border-color:var(--line-strong)}
+@media(max-width:700px){.continue-grid{grid-template-columns:1fr}.continue-choice{min-height:75px}}
+
+
+#notice-overlay{position:fixed;inset:0;z-index:210;display:none;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;background:rgba(237,243,245,.98)}
+#notice-panel{width:min(580px,96vw);max-height:90vh;overflow-y:auto;box-sizing:border-box;padding:32px;background:var(--surface);border:1px solid var(--line-strong);border-radius:12px;text-align:left;box-shadow:0 18px 55px rgba(68,91,101,.1)}
+#notice-panel h2{margin:0 0 20px;font-size:1.4rem;color:var(--main-dark)}
+#notice-panel h3{font-size:.91rem;color:var(--main-dark);margin:20px 0 7px}
+#notice-panel p{margin:0;color:var(--text-soft);font-size:.86rem;line-height:1.9}
+#notice-panel a{color:var(--main-dark);text-underline-offset:3px;overflow-wrap:anywhere}
+#notice-panel .notice-footer{margin-top:26px;text-align:center}
+#notice-panel .notice-footer .btn-style{background:var(--main);color:#fff;margin:0}
+
+
+.notebook-tools{margin-top:13px;border-top:1px solid var(--note-line);padding-top:12px}
+.notebook-tool-actions{display:flex;flex-wrap:wrap;gap:7px}
+.notebook-tool-button{padding:8px 11px;border:1px solid var(--note-line);border-radius:5px;background:var(--note-surface);color:var(--note-text);font:inherit;font-size:.75rem;cursor:pointer}
+.notebook-tool-button:disabled{opacity:.5;cursor:default}
+.notebook-check-result,.notebook-hint-row{margin:9px 0 0;font-size:.78rem;line-height:1.65;color:var(--note-text)}
+.notebook-check-result{font-weight:600}
+.notebook-tool-caption{font-size:.69rem;color:var(--muted);line-height:1.6;margin-top:7px}
+.final-notebook-panel{margin-top:12px;border:1px solid var(--line);border-radius:7px;padding:12px;background:var(--surface)}
+.final-notebook-summary{font-size:.79rem;color:var(--text-soft);line-height:1.6;margin-bottom:8px}
+.final-notebook-word{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:4px 0;font-size:.78rem;border-bottom:1px solid var(--line)}
+.final-notebook-word button{font:inherit;color:var(--main-dark);background:var(--surface-soft);border:1px solid var(--line);border-radius:4px;padding:4px 10px;cursor:pointer}
+
+#ending-gallery-overlay{position:fixed;inset:0;z-index:225;display:none;justify-content:center;align-items:center;padding:20px;box-sizing:border-box;background:rgba(237,243,245,.98)}
+#ending-gallery-panel{width:min(800px,96vw);max-height:92vh;max-height:92dvh;display:flex;flex-direction:column;overflow-y:auto;background:var(--surface);border:1px solid var(--line-strong);border-radius:12px;padding:28px 36px;box-sizing:border-box;box-shadow:0 20px 65px rgba(68,91,101,.12)}
+#ending-gallery-panel h2{color:var(--main-dark);margin:0 0 10px;text-align:center}
+#ending-gallery-title:focus{outline:none}
+#ending-gallery-panel .gallery-help{color:var(--text-soft);font-size:.85rem;line-height:1.7;text-align:center}
+.gallery-key-balance{font-size:.92rem;font-weight:700;text-align:center;color:var(--main-dark);padding:8px 0}
+.gallery-unlock-feedback{color:var(--main-dark);font-size:.83rem;line-height:1.6;text-align:center;min-height:1.5em}
+.ending-gallery-item{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:10px;padding:12px 14px;border:1px solid var(--line);border-radius:7px;background:var(--surface-soft)}
+.ending-gallery-info{min-width:0;display:flex;flex-direction:column;gap:3px}
+.ending-gallery-number{font-size:.89rem;font-weight:700;letter-spacing:.06em;color:var(--main-dark)}
+.ending-gallery-name{font-size:.8rem;line-height:1.45;color:var(--text-soft);overflow-wrap:anywhere}
+.ending-gallery-state{font-size:.7rem;line-height:1.45;color:var(--muted)}
+#ending-gallery-list{display:grid;grid-template-columns:1fr;gap:9px;margin:12px 0;overflow-y:auto;min-height:80px;flex:1 1 auto;overscroll-behavior:contain}
+#ending-gallery-list button{font-family:inherit;font-size:.86rem;line-height:1.4;min-width:70px;padding:9px 13px;text-align:center;border:1px solid var(--line-strong);border-radius:7px;background:var(--surface);color:var(--main-dark);cursor:pointer;font-weight:700}
+#ending-gallery-list button.ending-gallery-unlock{background:var(--main-soft)}
+#ending-gallery-list button:hover:not(:disabled){background:var(--main-soft);border-color:var(--main)}
+#ending-gallery-list button:disabled{cursor:default;color:var(--muted-light);opacity:.55}
+.gallery-footer{text-align:center;margin-top:12px;flex:0 0 auto}
+.gallery-footer .btn-style{font-size:.9rem;padding:12px 20px;background:var(--main);color:#fff}
+@media(max-width:700px){#ending-gallery-panel{padding:20px}.ending-gallery-item{gap:7px;padding:10px}#ending-gallery-list button{min-width:56px;padding:9px 8px;font-size:.8rem}}
+
+#ending-reader-overlay{position:fixed;inset:0;z-index:230;display:none;overflow-y:auto;overscroll-behavior:contain;background:var(--main-pale);box-sizing:border-box}
+.ending-reader-page{width:min(920px,100%);min-height:100vh;min-height:100dvh;margin:0 auto;padding:clamp(16px,4vw,44px);box-sizing:border-box}
+.ending-reader-paper{min-height:calc(100vh - 88px);min-height:calc(100dvh - 88px);box-sizing:border-box;padding:clamp(24px,5vw,64px);background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:0 14px 44px rgba(68,91,101,.09)}
+.ending-reader-number{font-size:.74rem;letter-spacing:.22em;color:var(--muted);text-align:center;font-weight:700}
+#ending-reader-title:focus{outline:none}
+#ending-reader-title{font-size:clamp(1.35rem,2.8vw,1.85rem);line-height:1.5;color:var(--main-dark);text-align:center;margin:14px 0 23px}
+.ending-reader-rule{height:1px;width:84px;background:var(--line-strong);margin:0 auto 40px}
+#ending-reader-body{color:var(--text);font-size:1.02rem;line-height:2.25;text-align:left;overflow-wrap:anywhere}
+#ending-reader-notes{margin-top:36px;font-size:.94rem;line-height:1.9}
+.ending-reader-actions{text-align:center;margin-top:36px;padding-top:28px;border-top:1px solid var(--line)}
+.ending-reader-actions .btn-style{background:var(--main);color:#fff;margin:0}
+@media(max-width:700px){.ending-reader-page{padding:0}.ending-reader-paper{min-height:100vh;min-height:100dvh;border:0;border-radius:0;padding:28px 22px 44px;box-shadow:none}.ending-reader-rule{margin-bottom:28px}#ending-reader-body{font-size:.97rem;line-height:2.1}}
+
+/* END 07の自動解放後は、タイトル画面と「1年後」の本文を暖色に切り替える。 */
+html.one-year-unlocked #bg-layer{background:radial-gradient(circle at 20% 15%,rgba(255,255,255,.7),transparent 40%),linear-gradient(135deg,#fff1de,#ffcd94)}
+html.one-year-unlocked #device-check-overlay{background:linear-gradient(150deg,#fff7eb 0%,#ffe2ba 55%,#ffcf9b 100%)}
+html.one-year-unlocked #device-check-overlay .device-box{border-color:#e7b47c;box-shadow:0 22px 65px rgba(169,96,45,.16)}
+#one-year-entry-btn{background:linear-gradient(120deg,#f8cb8b,#edaa6b);border-color:#d69a68;color:#6d4328;font-weight:700;box-shadow:0 4px 13px rgba(189,108,54,.13)}
+#one-year-entry-btn:hover{background:linear-gradient(120deg,#ffdbab,#f3bb81)}
+#ending-reader-overlay.ending-final{background:linear-gradient(135deg,#fff4e1,#f7c895)}
+#ending-reader-overlay.ending-final .ending-reader-paper{background:#fffaf2;border-color:#e7bf93;box-shadow:0 14px 50px rgba(155,87,35,.13)}
+#ending-reader-overlay.ending-final .ending-reader-number,#ending-reader-overlay.ending-final #ending-reader-title{color:#a15d30}
+#ending-reader-overlay.ending-final .ending-reader-rule{background:#dba36b}
+#game-modal-overlay{position:fixed;inset:0;z-index:260;display:none;align-items:center;justify-content:center;background:rgba(49,57,60,.55);padding:20px;box-sizing:border-box}
+#game-modal-panel{width:min(460px,96vw);max-height:90dvh;overflow-y:auto;box-sizing:border-box;border:1px solid var(--line-strong);border-radius:14px;background:var(--surface);padding:30px 30px 26px;text-align:center;box-shadow:0 24px 75px rgba(34,48,56,.22)}
+#game-modal-title{font-size:1.24rem;line-height:1.6;margin:3px 0 12px;color:var(--main-dark)}
+#game-modal-message{color:var(--text-soft);font-size:.9rem;line-height:1.9;white-space:pre-line;margin:0 0 23px}
+.game-modal-symbol{font-size:1.5rem;color:var(--main);margin-bottom:5px}
+.game-modal-actions{display:flex;justify-content:center;gap:11px;flex-wrap:wrap}
+.game-modal-actions .btn-style{margin:0;min-width:120px;padding:10px 16px;font-size:.9rem}
+.game-modal-cancel{background:var(--surface-soft);color:var(--main-dark);border:1px solid var(--line-strong)}
+.game-modal-confirm{background:var(--main);color:#fff}
+#game-modal-overlay.one-year-modal #game-modal-panel{border-color:#e8b783;background:#fff9f0}
+#game-modal-overlay.one-year-modal .game-modal-symbol,#game-modal-overlay.one-year-modal #game-modal-title{color:#ac622b}
+#game-modal-overlay.one-year-modal .game-modal-confirm{background:#bd7747;color:#fff}
+@media(max-width:540px){#game-modal-panel{padding:26px 18px 22px}.game-modal-actions .btn-style{min-width:106px}}
+</style>
+</head>
+<body>
+<div id="bg-layer"></div>
+<div id="device-check-overlay"><div class="device-box">
+<h2 id="check-title" style="color:var(--main-dark)">CHECKING ENVIRONMENT...</h2>
+<p id="check-msg">本ゲームはPCブラウザ環境でのプレイを前提として設計されています。</p>
+<div id="check-action">
+<button id="entry-btn" class="btn-style" style="background:var(--main);color:#fff;display:none">物語を始める</button>
+<button id="recollection-entry-btn" class="btn-style" style="background:var(--main-dark);color:#fff;display:none">つづきから</button>
+<button id="one-year-entry-btn" type="button" class="btn-style" style="display:none" onclick="openOneYearAfter()">1年後 <span aria-hidden="true">✦</span></button>
+<button id="ending-gallery-entry-btn" type="button" class="btn-style" style="background:var(--surface-soft);color:var(--main-dark);border-color:var(--line-strong);display:none" onclick="openEndingGallery()">エンディング回想</button>
+<button id="notice-entry-btn" class="btn-style" type="button" style="background:var(--surface-soft);color:var(--main-dark);border-color:var(--line-strong)" onclick="openNotice()">おしらせ</button>
+<p id="error-msg" style="color:var(--wrong);display:none"><b>MOBILE DEVICE DETECTED</b><br>スマートフォン等のモバイル環境ではプレイできません。</p>
+</div></div></div>
+<div id="notice-overlay" role="dialog" aria-modal="true" aria-labelledby="notice-title" aria-hidden="true">
+  <section id="notice-panel">
+    <h2 id="notice-title" tabindex="-1">おしらせ</h2>
+    <h3>このゲームについて</h3>
+    <p>グランブルーファンタジーの非公式の二次創作ゲームです。原作の公式運営・制作関係者および権利者とは関係ありません。</p>
+    <h3>ご利用にあたって</h3>
+    <p>本作のデータ・文章・プログラム等の無断転載、再配布、ミラー公開、改変版の公開、商用利用はご遠慮ください。</p>
+    <h3>お問い合わせ</h3>
+    <p>製作：<span id="notice-author">まひかす</span></p>
+    <p>ご感想・お問い合わせ：<a id="notice-marshmallow" href="https://marshmallow-qa.com/oj0afz3donoawsc" target="_blank" rel="noopener noreferrer">マシュマロはこちら</a></p>
+    <div class="notice-footer"><button type="button" class="btn-style" onclick="closeNotice()">タイトルへ戻る</button></div>
+  </section>
+</div>
+<div id="ending-gallery-overlay" role="dialog" aria-modal="true" aria-labelledby="ending-gallery-title" aria-hidden="true">
+  <section id="ending-gallery-panel">
+    <h2 id="ending-gallery-title" tabindex="-1">エンディング回想</h2>
+    <p class="gallery-help">END 01〜06は未解放ならカギ1個で解放できます（閲覧だけではクリア扱いになりません）。6種類すべて解放すると、タイトル画面に「1年後」が現れます。</p>
+    <p id="ending-gallery-keys" class="gallery-key-balance" aria-live="polite"></p>
+    <p id="ending-gallery-status" class="gallery-unlock-feedback" role="status" aria-live="polite"></p>
+    <div id="ending-gallery-list"></div>
+    <div class="gallery-footer">
+      <button type="button" class="btn-style" onclick="closeEndingGallery()">タイトルへ戻る</button>
+    </div>
+  </section>
+</div>
+<div id="game-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="game-modal-title" aria-describedby="game-modal-message" aria-hidden="true">
+  <section id="game-modal-panel" tabindex="-1">
+    <div class="game-modal-symbol" aria-hidden="true">✦</div>
+    <h2 id="game-modal-title"></h2>
+    <p id="game-modal-message"></p>
+    <div class="game-modal-actions">
+      <button type="button" class="btn-style game-modal-cancel" id="game-modal-cancel">キャンセル</button>
+      <button type="button" class="btn-style game-modal-confirm" id="game-modal-confirm">確認</button>
+    </div>
+  </section>
+</div>
+<div id="intro-overlay"><div class="content-box">
+<img src="title.png" alt="声を聴かせて、ランスロット！" class="title-image" onerror="this.style.display='none'; document.getElementById('intro-title-fallback').style.display='block'">
+<h1 id="intro-title-fallback" class="title-image-fallback">声を聴かせて、ランスロット！</h1>
+<p>ある日。散歩中のランスロットとヴェインは、魔物に襲われている親子を目撃する。<br>
+とっさに動いたランスロットは背後から魔物が放った呪いに気づけなかった。<br>
+ヴェインは身を投げ出してランスロットをかばい、その拍子に呪いを全身に浴びてしまう。<br>
+魔物を倒して識者に呪いを解析してもらった２人は、恐ろしい現実を突きつけられた。<br><br>
+「これは孤独の呪いです。最も心を寄せる相手の言葉が理解できなくなる。<br>
+結果的に絆を絶たれてしまうのです」<br>
+……２人の関係にとって大切な言葉ほど、意味不明な音に変わってしまう呪い。<br><br>
+俺が最も心を寄せる相手……考えなくてもわかる。ランちゃんのことだ。<br>
+この呪いが解けない限り、ランちゃんとの絆が絶たれてしまう……？<br>
+いやだ。……俺は絶対にあきらめない！このままランちゃんの声がわからないなんていやだ。<br>
+ヴェインはランスロットの言葉に耳を傾け、ひとつひとつ記録していくことにした。<br>
+いつかまた、お前の言葉を理解できるように。<br>
+あの日以来暗い表情のままの幼馴染の笑顔を取り戻して、大好きだよ、と伝えるために。</p>
+<button id="to-tutorial" class="btn-style" style="background:var(--main);color:#fff">次へ</button>
+</div></div>
+<div id="tutorial-overlay"><div class="content-box">
+<h2 style="color:var(--main-dark)">プレイ方法</h2>
+<div style="text-align:left;background:var(--surface-soft);border:1px solid var(--line);padding:25px;border-radius:10px;font-size:.9em">
+<p><b>【ヴェインのノート】</b><br>
+このゲームはヴェイン視点で進行します。<br>
+ランスロットの言葉すべてが聞こえないわけではなく、２人の絆にとって重要な部分のみ虫食いのような記号に聞こえます。<br>
+会話の文脈やヴェインの観察から虫食いとなっている言葉の意味を考え、ノートに仮説を書き留めてください。<br>
+入力した時点では、仮説が正しいかどうかは判定されません。<br><br>
+同じ記号は、同じ意味を持つ言葉を表します。文章によって「待って」「待てば」のように形が変わる場合がありますが、ノートには「待つ」のような<b>基本の形・言い切りの形</b>を記してください。<br><br>
+ノートには、ランスロットがその言葉を発したシーンも記録されます。ノートは何度でも書きなおせます。</p><br>
+<p><b>【ヴェインの返答】</b><br>
+ノートへ仮説を書いたら「返答へ進む」を押してください。<br>
+その時点でヴェインが理解している内容から、返答候補が決まります。<br>
+聞き取れなくても、表情や状況を手がかりに会話を続けられます。<br>
+正しい返答を当てることが目的ではありません。どう返すかは、あなたが選んでください。<br>
+一度返答へ進んだ場面の候補と、その場で選んだ返答は変更できません。</p><br>
+<p><b>【理解度】</b><br>
+正しい仮説を書いただけでは、その言葉の理解が確定したことにはなりません。<br>
+会話を重ね、十分な手掛かりが揃ったとき、ヴェイン自身がその意味へ辿り着きます。<br>
+一度理解した言葉は、それ以降の会話と過去LOGで日本語として読めるようになります。</p><br>
+<p><b>【周回】</b><br>
+一度クリアすると、タイトル画面に「つづきから」が現れます。<br>
+はじまり・物語の途中・最後の言葉から再開でき、ノートに引き継ぐ理解度も選べます。<br>
+途中から始めると、そこまでの選択は保存済みの結末から引き継ぎます。<br>
+言葉をどう理解したかと、どのように返答したかが結末に影響します。<br>
+エンディングは全てハッピーエンドです。</p>
+</div>
+<button id="start-init-btn" class="btn-style" style="background:var(--main);color:#fff">物語を開始する</button>
+</div></div>
+<div id="load-overlay"><div class="content-box">
+<h2 style="color:var(--main-dark)">ヴェインの記憶</h2>
+<p>過去のノートを引き継ぎますか？</p>
+<button id="load-yes" class="btn-style" style="background:var(--main);color:#fff">引き継ぐ</button>
+<button id="load-no" class="btn-style" style="background:var(--main-dark);color:#fff">最初から解く</button>
+</div></div>
+<div id="understanding-flash" aria-hidden="true"><div class="understanding-flash-inner">
+<div class="understanding-flash-label">UNDERSTANDING</div>
+<div id="understanding-flash-words"></div>
+<div class="understanding-flash-copy">……そういう意味だったんだ。</div>
+</div></div>
+  
+<div id="continue-overlay" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="continue-title">
+  <div id="continue-panel">
+    <p class="continue-eyebrow">CONTINUE / MEMORY</p>
+    <h2 class="continue-heading" id="continue-title">つづきから</h2>
+    <p class="continue-description">ゲームの再開地点とヴェインのノートの状態を選んでください。<br>ヴェインの返答とノートの状態でエンディングが変化します。</p>
+    <div class="continue-section-title">1. どこから始める？</div>
+    <div class="continue-grid" id="continue-scenes">
+      <button type="button" class="continue-choice" data-continue-scene="0" onclick="chooseContinueScene(0)"><span class="continue-choice-code">SCENE 01</span><span class="continue-choice-label">はじまり</span><span class="continue-choice-caption">最初の会話から、もう一度</span></button>
+      <button type="button" class="continue-choice" data-continue-scene="10" onclick="chooseContinueScene(10)"><span class="continue-choice-code">SCENE 11</span><span class="continue-choice-label">物語の途中</span><span class="continue-choice-caption">言葉がすれ違い始めた頃から</span></button>
+      <button type="button" class="continue-choice" data-continue-scene="19" onclick="chooseContinueScene(19)"><span class="continue-choice-code">SCENE 20</span><span class="continue-choice-label">最後の言葉</span><span class="continue-choice-caption">最後の推理と返答から</span></button>
+    </div>
+    <div class="continue-section-title">2. どこまで覚えている？</div>
+    <div class="continue-grid" id="continue-knowledge">
+      <button type="button" class="continue-choice" data-continue-knowledge="zero" onclick="chooseContinueKnowledge('zero')"><span class="continue-choice-code">RESET</span><span class="continue-choice-label">白紙から</span><span class="continue-choice-caption">理解を引き継がずに始める</span></button>
+      <button type="button" class="continue-choice" data-continue-knowledge="memory" onclick="chooseContinueKnowledge('memory')"><span class="continue-choice-code">MEMORY</span><span class="continue-choice-label">保存された記憶</span><span class="continue-choice-caption" id="continue-memory-count">以前の世界線の理解を再現する</span></button>
+      <button type="button" class="continue-choice" data-continue-knowledge="all" onclick="chooseContinueKnowledge('all')"><span class="continue-choice-code">MASTERED</span><span class="continue-choice-label">解読済みを引き継ぐ</span><span class="continue-choice-caption" id="continue-all-count">今までに解いた言葉を使う</span></button>
+    </div>
+    <div class="continue-summary" id="continue-summary" aria-live="polite"></div>
+    <div class="continue-actions">
+      <button type="button" class="btn-style continue-secondary" onclick="closeContinueSetup()">タイトルへ戻る</button>
+      <button type="button" class="btn-style continue-primary" id="continue-start" onclick="startChosenContinuation()">この状態で始める</button>
+    </div>
+  </div>
+</div>
+
+<div id="game-container">
+<div id="main-screen">
+<div id="progress-bar">SCENE&nbsp;<span id="progress-current">01</span>&nbsp;/&nbsp;<span id="progress-total">20</span></div>
+<div class="status-bar"><div class="ending-collection">
+<span class="ending-collection-label">ENDING</span>
+<div class="ending-badge-row">
+<span class="ending-progress-badge" data-ending-id="1">END 01</span>
+<span class="ending-progress-badge" data-ending-id="6">END 06</span>
+<span class="ending-progress-badge" data-ending-id="2">END 02</span>
+<span class="ending-progress-badge" data-ending-id="3">END 03</span>
+<span class="ending-progress-badge" data-ending-id="4">END 04</span>
+<span class="ending-progress-badge" data-ending-id="5">END 05</span>
+<span class="ending-progress-badge gold" data-ending-id="7">END 07</span>
+</div><span class="ending-count" data-ending-count>0 / 7</span></div>
+</div>
+<div id="main-view-tabs"><button type="button" id="play-view-tab" class="main-view-tab active" onclick="switchMainView('play')">会話</button><button type="button" id="log-view-tab" class="main-view-tab" onclick="switchMainView('log')">過去LOG</button></div>
+<div id="play-view">
+<div id="display">
+<div id="chara-header"><span id="speaker-name">LANCELOT</span></div>
+<div class="bubble" id="message-text">......</div>
+<div id="vane-thought-block"><div class="block-label">VANE</div><div class="thought-bubble" id="vane-thought-text"></div></div>
+<div id="story-block" style="display:none"><div class="block-label">STORY</div><div class="story-bubble" id="story-text"></div></div>
+<div id="resolution-block" style="display:none"><div class="block-label">UNDERSTANDING</div><div class="resolution-bubble" id="resolution-text"></div></div>
+</div><div class="controls" id="action-area"></div>
+</div>
+<div id="log-section"><div id="log-header">これまでの会話</div><div id="log-panel"></div></div>
+</div>
+<div id="dictionary">
+<div id="dict-header"><h3>ヴェインのノート</h3><p>聞き取れない言葉の意味を推測しましょう。<br>推測した意味を書き留めてください。</p></div>
+<div id="dict-editor-section"><div id="dict-editor-label">選択中の言葉</div><div id="dict-list"></div></div>
+<div id="word-list-section"><div id="word-list-header">言葉一覧</div><div id="word-list-panel"><div id="word-list"></div></div></div>
+</div>
+</div>
+<div id="ending-reader-overlay" role="dialog" aria-modal="true" aria-labelledby="ending-reader-title" aria-hidden="true">
+  <main class="ending-reader-page">
+    <article class="ending-reader-paper">
+      <div class="ending-reader-number" id="ending-reader-number"></div>
+      <h1 id="ending-reader-title" tabindex="-1"></h1>
+      <div class="ending-reader-rule" aria-hidden="true"></div>
+      <div id="ending-reader-body"></div>
+      <div id="ending-reader-notes"></div>
+      <div class="ending-reader-actions">
+        <button type="button" id="ending-reader-return" class="btn-style" onclick="returnFromEndingReader()">タイトルへ</button>
+      </div>
+    </article>
+  </main>
+</div>
+<script src="game.js"></script>
+<script>
+
+const wordBank = {
+    W1: { q: "θωε", canonical: "心配する", variants: ["しんぱい", "心配", "心配する", "しんぱいする"], synonyms: ["気がかり", "気掛かり", "懸念"], nearMisses: ["怖い", "不安", "気になる", "案じる"], meaning: "ヴェインの状態・安全・心情などを気にかけること", boundary: "「怖い」はランスロット自身の恐怖。「心配」はヴェインへ向く感情。", appearances: [1, 5, 13], difficulty: "easy", finalRole: "物語の入口。後に「大切」「失う」「怖い」へ繋がる気遣い。", minClues: 2 },
+    W2: { q: "ΣΦμ", canonical: "一緒", variants: ["いっしょ"], synonyms: ["共に", "ともに"], nearMisses: ["そば", "傍", "隣", "ずっと", "同行"], meaning: "二人で行動する、二人として何かを共有すること", boundary: "「ずっと」は時間的継続。「一緒」は誰と・どのような状態であるか。", appearances: [4, 8, 17, 19, 20], difficulty: "easy-medium", finalRole: "二人がこの先も共にあることを示す未来語。", minClues: 2 },
+    W3: { q: "αβγδε", canonical: "ありがとう", variants: ["ありがと", "有難う", "有り難う"], synonyms: ["感謝", "感謝する", "お礼"], nearMisses: ["嬉しい", "助かった", "ごめん", "すまない"], meaning: "ヴェイン本人がしてくれたことへの感謝", boundary: "謝罪や一般的な礼儀ではなく、ヴェインとの関係に意味を持つ感謝。", appearances: [3, 9, 18], difficulty: "easy", finalRole: "最後まで理解しようとしてくれたヴェインへの感謝。", minClues: 2 },
+    W4: { q: "λησ", canonical: "親友", variants: ["しんゆう"], synonyms: ["ベストフレンド"], nearMisses: ["友達", "友人", "相棒", "仲間", "幼馴染"], meaning: "現在の二人の関係を定義する言葉", boundary: "「親友」は関係名。「愛している」は感情。", appearances: [7, 12, 17], difficulty: "easy-medium", finalRole: "「親友だからだけではない」と関係を一段深めるための基準点。", minClues: 2 },
+    W5: { q: "ψζβ", canonical: "大切", variants: ["たいせつ"], synonyms: ["大事", "だいじ"], nearMisses: ["特別", "重要", "好き", "大好き", "愛している", "かけがえのない"], meaning: "ヴェインという存在そのものに高い価値を置いていること", boundary: "「大切」は恋愛に限定されない存在価値。「愛している」は最終的な愛情。", appearances: [6, 10, 16, 20], difficulty: "medium", finalRole: "心配・守る・失う・怖いを結ぶ理由。", minClues: 2 },
+    W6: { q: "ΘΞΦ", canonical: "守る", variants: ["まもる", "護る"], synonyms: ["保護する", "守護する"], nearMisses: ["助ける", "救う", "庇う", "かばう", "支える"], meaning: "ヴェイン個人を守ろうとする行動・意志・誓い", boundary: "一般的な職務としての「城を守る」「国を守る」は暗号化しない。", appearances: [6, 12, 19], difficulty: "medium", finalRole: "一方的に守ろうとする関係から、互いに支え合う関係への変化。", minClues: 2 },
+    W7: { q: "κμνρ", canonical: "忘れる", variants: ["わすれる"], synonyms: ["忘却", "忘却する"], nearMisses: ["捨てる", "手放す", "失う", "離れる", "消す"], meaning: "記憶・言葉・関係などを意図的に手放そうとすること", boundary: "「忘れる」は本人の意思を伴う。「失う」は望まない喪失。", appearances: [11, 15, 16], difficulty: "medium", finalRole: "ランスロットが関係を断とうとした誤った選択と、その撤回。", minClues: 2 },
+    W8: { q: "Ωβδ", canonical: "失う", variants: ["うしなう", "喪う"], synonyms: ["失くす", "なくす", "喪失", "喪失する"], nearMisses: ["離れる", "別れる", "忘れる", "死ぬ", "手放す"], meaning: "大切な相手や関係を、本人の望みに反して喪失すること", boundary: "「忘れる」は意図的。「失う」は望まない喪失。", appearances: [10, 14, 17, 20], difficulty: "medium-hard", finalRole: "ランスロットが距離を取った根本原因である喪失への恐れ。", minClues: 3 },
+    W9: { q: "ξΔφ", canonical: "怖い", variants: ["こわい", "恐い"], synonyms: ["恐れる", "恐怖", "恐ろしい"], nearMisses: ["心配", "不安", "怯える", "おびえる", "つらい"], meaning: "ランスロット自身が恐怖を感じること", boundary: "「心配」はヴェインを気にかけること。「怖い」はランスロット自身の内側の感情。", appearances: [12, 15, 17, 20], difficulty: "medium-hard", finalRole: "ランスロットが自分の弱さを認めるための核心語。", minClues: 3 },
+    W10: { q: "∞∅θ", canonical: "ずっと", variants: ["ズット", "ずーっと"], synonyms: ["いつまでも", "末永く", "末ながく"], nearMisses: ["いつも", "永遠", "これからも", "長く", "一緒"], meaning: "二人の関係や感情が時間的に継続すること", boundary: "「一緒」は二人である状態。「ずっと」はその状態がいつまで続くか。", appearances: [13, 16, 19, 20], difficulty: "medium", finalRole: "過去から未来へ関係が続いていくことを示す。", minClues: 2 },
+    W11: { q: "πρστυφ", canonical: "愛している", variants: ["あいしている", "愛してる", "あいしてる"], synonyms: ["愛する", "愛"], nearMisses: ["好き", "大好き", "恋している", "恋する", "大切", "愛情"], meaning: "「親友」「大切」だけでは説明できない最終的な愛情", boundary: "「大切」と完全同義にしない。本作の最終解読語。", appearances: [15, 18, 20], difficulty: "hardest", finalRole: "最後の告白で意味が確定する最重要語。", minClues: 3 },
+    W12: { q: "ϕχψζ", canonical: "信じる", variants: ["しんじる"], synonyms: ["信頼", "信頼する"], nearMisses: ["頼る", "信用", "信用する", "任せる", "期待する"], meaning: "ヴェインの判断・言葉・存在を信頼し、確信すること", boundary: "「信じる」は認識・信頼。「頼る」は実際に自分の負担を相手へ預けること。", appearances: [5, 11, 18, 20], difficulty: "medium", finalRole: "言葉が完全に分からなくても成立する二人の信頼。", minClues: 2 },
+    W13: { q: "℧ΞΛ", canonical: "頼る", variants: ["たよる"], synonyms: ["頼りにする", "頼みにする"], nearMisses: ["信じる", "任せる", "甘える", "助けを求める", "依存する", "すがる"], meaning: "自分の弱さや負担をヴェインへ預け、支えを求めること", boundary: "相手を信じていても、実際には頼らない状態は成立する。", appearances: [9, 14, 18, 20], difficulty: "medium", finalRole: "一人で抱え込まず、互いに支え合う関係への変化。", minClues: 2 },
+    W14: { q: "ΓΔ", canonical: "約束", variants: ["やくそく", "約束する"], synonyms: [], nearMisses: ["誓う", "誓い", "誓約", "保証", "決める", "契約"], meaning: "二人の間で未来についての意志を言葉として確定すること", boundary: "「一緒」は望む状態。「ずっと」は時間。「約束」はその未来を二人で確認する行為。", appearances: [8, 13, 19, 20], difficulty: "medium", finalRole: "「ずっと」「一緒」など複数の既知語を未来へ結びつける。", minClues: 2 },
+    W15: { q: "ΨΩ", canonical: "伝える", variants: ["つたえる"], synonyms: ["届ける"], nearMisses: ["言う", "話す", "知らせる", "伝達する", "分かってほしい", "聞いて"], meaning: "自分の本心・感情・願いを言葉としてヴェインへ届けること", boundary: "「愛している」などは伝える内容。「伝える」は届けようとする行為。", appearances: [2, 11, 20], difficulty: "medium", finalRole: "「言葉が届かない」というゲームそのもののテーマを回収する。", minClues: 2 }
+};
+
+const wordHints = {
+    "W1": [
+        "目を覚ましたとき、ランちゃんの顔は強張っていた。",
+        "自分が感じる恐怖そのものとは種類が違う。",
+        "相手が無事でいられるか気にかける気持ちの言葉だ。"
+    ],
+    "W2": [
+        "体調が戻ったら訓練も食事も、とランちゃんは話していた。",
+        "いつまで、というような意味ではないみたいだ。",
+        "何かをするとき、２人でいる状態を表す。"
+    ],
+    "W3": [
+        "ランちゃんは、あの日ヴェインにかばわれたことを思い出してから、この短い音を口にした。",
+        "嬉しいなどの自分の状態を述べているわけではない。",
+        "相手がしてくれたことに向ける、短い気持ちの言葉。"
+    ],
+    "W4": [
+        "昔からの関係を、ランちゃんはわざわざ言葉にしようとした。",
+        "俺たち２人を表す言葉といえばこれだ。",
+        "仕事の仲間というだけでも、ただの知り合いというだけでもない。"
+    ],
+    "W5": [
+        "ランちゃんは、俺のことをどう思っているのだろう。",
+        "相手の存在そのものに向ける、重みのある評価。",
+        "恋心だけを表すとは限らない。"
+    ],
+    "W6": [
+        "あの日のことを話すたび、ランちゃんは自分の行動を悔やむ。",
+        "危険から誰かを遠ざけたいという行動や意志。",
+        "手を差し伸べるだけでなく、危害が及ばないようにすること。"
+    ],
+    "W7": [
+        "ランちゃんは何をしてほしいんだろう。",
+        "記憶に対して、人が意識して行おうとすること。",
+        "知らないうちに失くすこととは違って、自分から手放そうとする。"
+    ],
+    "W8": [
+        "ランちゃんは声を震わせていた。",
+        "自分で離れようと決めるのではなく、望まない別れへの恐れに近い。",
+        "必要なものが、手元から消えること。",
+    ],
+    "W9": [
+        "話しかけることすらためらうランちゃんの目は、何を映していた？",
+        "相手を気遣うだけではない感情。",
+        "『相手を心配する』よりも、自分が何かにおびえる気持ちに近い。"
+    ],
+    "W10": [
+        "ランちゃんは何について話していたのだろう？",
+        "時間が続いていくことを表す。",
+        "『誰といるか』ではなく、『いつまで』続くか。"
+    ],
+    "W11": [
+        "ランちゃんは言葉を口にするまで何度もためらっていた。",
+        "彼がずっと胸の奥へ隠してきた、相手への気持ち。",
+        "恋人になりたい人へ告げる、最も深い気持ち。"
+    ],
+    "W12": [
+        "ランちゃんは俺の判断を受け止めようとした。",
+        "相手の判断を受け入れ、疑わずにいようとする姿勢。",
+        "行動を預ける前提になる気持ち。"
+    ],
+    "W13": [
+        "ランちゃんは１人で抱えてきたものを思い返した。",
+        "自分だけではなく、相手の力を借りる行為。",
+        "相手の力を認めるだけでは足りない。自分の負担を預けること。"
+    ],
+    "W14": [
+        "ランちゃんは次の機会を大事にしたいようだ。",
+        "未来に向けて、互いの意志を交わす言葉。",
+        "単なる予定の確認ではない。"
+    ],
+    "W15": [
+        "ランちゃんは俺に何かをしたいみたいだ。",
+        "胸の中の思いを相手へ届かせようとする行為。",
+        "気持ちの中身ではなく、それを相手に届けること。"
+    ]
+};
+let notebookChecks = {};
+let notebookHintLevels = {};
+let finalReviewOpen = false;
+
+let currentStep = 0, viewingStep = 0, lovePoints = 0, userDict = {}, colSet = new Set();
+let selectedAnswers = [];
+let sceneChoiceRecords = [];
+let masteredWords = new Set(), vaneKnownWords = new Set(), vaneUnderstoodAt = {};
+let wordSeenCounts = {}, seenSceneIds = new Set();
+let interactionPhase = "conversation", pendingOption = null, pendingResolvedKeys = [], pendingFinalLine = "";
+let pendingChoiceContext = null;
+let activeDictKey = null, mainViewMode = "play";
+let interpretationCounts = { unknown: 0, misread: 0, understood: 0 };
+let axisCounts = { listen: 0, act: 0, bond: 0, self: 0, daily: 0 };
+let routeCounts = { twin: 0, glass: 0, resonance: 0 };
+let understandingFlashTimer = null;
+
+scenario.forEach(scene => {
+    ["opts", "insightOpts", "misreadOpts"].forEach((group, groupIndex) => {
+        const prefix = ["o", "i", "m"][groupIndex];
+        (scene[group] || []).forEach((option, index) => {
+            if (!option.id) option.id = `s${String(scene.id).padStart(2, "0")}_${prefix}${index + 1}`;
+        });
+    });
+});
+
+const maxLove = 450;
+
+function getAllSceneOptions(scene) {
+    if (!scene) return [];
+    return [...(scene.opts || []), ...(scene.insightOpts || []), ...(scene.misreadOpts || [])];
+}
+
+function findSceneOption(scene, id) {
+    return getAllSceneOptions(scene).find(o => o.id === id) || null;
+}
+
+function escapeHtml(value) {
+    return String(value ?? "").replace(/[&<>"']/g, c => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        "\"": "&quot;",
+        "'": "&#39;"
+    }[c]));
+}
+
+function switchMainView(mode) {
+    if (mode !== "play" && mode !== "log") return;
+    mainViewMode = mode;
+
+    const playView = document.getElementById("play-view");
+    const logSection = document.getElementById("log-section");
+    const playTab = document.getElementById("play-view-tab");
+    const logTab = document.getElementById("log-view-tab");
+
+    if (!playView || !logSection || !playTab || !logTab) return;
+
+    if (mode === "log") {
+        playView.style.display = "none";
+        logSection.style.display = "flex";
+        playTab.classList.remove("active");
+        logTab.classList.add("active");
+        renderPastLog();
+    } else {
+        playView.style.display = "flex";
+        logSection.style.display = "none";
+        logTab.classList.remove("active");
+        playTab.classList.add("active");
+    }
+}
+
+function rebuildRunState() {
+    lovePoints = 0;
+    interpretationCounts = { unknown: 0, misread: 0, understood: 0 };
+
+    sceneChoiceRecords = sceneChoiceRecords.map((record, index) =>
+        selectedAnswers[index] && record?.optionId === selectedAnswers[index]
+            ? record
+            : null
+    );
+
+    axisCounts = { listen: 0, act: 0, bond: 0, self: 0, daily: 0 };
+    routeCounts = { twin: 0, glass: 0, resonance: 0 };
+
+    selectedAnswers.forEach((optionId, sceneIndex) => {
+        if (!optionId) return;
+
+        const scene = scenario[sceneIndex];
+        const option = findSceneOption(scene, optionId);
+
+        if (!option) return;
+
+        lovePoints += Number(option.v) || 0;
+
+        if (!option.endingImpact) return;
+
+        if (Object.prototype.hasOwnProperty.call(axisCounts, option.axis)) {
+            axisCounts[option.axis]++;
+        }
+
+        if (Object.prototype.hasOwnProperty.call(routeCounts, option.route)) {
+            routeCounts[option.route]++;
+        }
+    });
+}
+
+function normalizeGuess(value) {
+    return String(value ?? "").normalize("NFKC").replace(/\s+/g, "").trim();
+}
+
+function isAcceptedGuess(key, value) {
+    if (!wordBank[key]) return false;
+
+    const input = normalizeGuess(value);
+    if (!input) return false;
+
+    const accepted = [
+        wordBank[key].canonical,
+        ...(wordBank[key].variants || []),
+        ...(wordBank[key].synonyms || [])
+    ];
+
+    return accepted.some(candidate => normalizeGuess(candidate) === input);
+}
+
+function getSceneWordStates(scene) {
+    const wordStates = {};
+    const guesses = {};
+
+    const keys = [
+        ...new Set(
+            (scene.words || [])
+                .map(item => item.key)
+                .filter(key => wordBank[key])
+        )
+    ];
+
+    keys.forEach(key => {
+        const guess = String(userDict[key] || "").trim();
+
+        guesses[key] = guess;
+        wordStates[key] =
+            vaneKnownWords.has(key) || isAcceptedGuess(key, guess)
+                ? "correct"
+                : (guess ? "wrong" : "blank");
+    });
+
+    return {
+        wordStates,
+        guesses,
+        allCorrect: keys.every(key => wordStates[key] === "correct")
+    };
+}
+
+function matchesMisreadTrigger(option, wordStates, guesses) {
+    const trigger = option.trigger;
+
+    if (
+        !trigger ||
+        !wordBank[trigger.key] ||
+        wordStates[trigger.key] !== "wrong"
+    ) {
+        return false;
+    }
+
+    const actual = normalizeGuess(guesses[trigger.key]);
+
+    if (!actual || isAcceptedGuess(trigger.key, actual)) {
+        return false;
+    }
+
+    return Array.isArray(trigger.guesses) &&
+        trigger.guesses.some(
+            guess => normalizeGuess(guess) === actual
+        );
+}
+
+function buildChoicesForScene(scene, states) {
+    const choices = (scene.opts || []).map(
+        option => ({ option, kind: "base" })
+    );
+
+    if (states.allCorrect) {
+        (scene.insightOpts || []).forEach(
+            option => choices.push({ option, kind: "insight" })
+        );
+    } else {
+        (scene.misreadOpts || []).forEach(option => {
+            if (
+                matchesMisreadTrigger(
+                    option,
+                    states.wordStates,
+                    states.guesses
+                )
+            ) {
+                choices.push({ option, kind: "misread" });
+            }
+        });
+    }
+
+    return shuffle(choices);
+}
+
+function lockChoicesForCurrentScene() {
+    if (
+        interactionPhase !== "conversation" ||
+        currentStep >= scenario.length
+    ) {
+        return;
+    }
+
+    pendingChoiceContext = null;
+
+    const scene = scenario[currentStep];
+    const states = getSceneWordStates(scene);
+
+    pendingChoiceContext = {
+        sceneIndex: currentStep,
+        wordStates: Object.freeze({ ...states.wordStates }),
+        guesses: Object.freeze({ ...states.guesses }),
+        allGuesses: Object.freeze({ ...userDict }),
+        options: Object.freeze(buildChoicesForScene(scene, states))
+    };
+
+    interactionPhase = "choice";
+    updateUI(true);
+}
+
+function chooseReply(choice) {
+    if (
+        interactionPhase !== "choice" ||
+        !pendingChoiceContext ||
+        pendingChoiceContext.sceneIndex !== currentStep
+    ) {
+        return;
+    }
+
+    if (!pendingChoiceContext.options.includes(choice)) {
+        return;
+    }
+
+    const scene = scenario[currentStep];
+    const { option, kind } = choice;
+
+    selectedAnswers[currentStep] = option.id;
+
+    sceneChoiceRecords[currentStep] = {
+        sceneId: scene.id,
+        wordStates: { ...pendingChoiceContext.wordStates },
+        optionId: option.id,
+        kind,
+        misreadKey:
+            kind === "misread"
+                ? (option.trigger?.key || null)
+                : null,
+        route: option.route || null,
+        guesses: { ...pendingChoiceContext.guesses },
+        notebookGuesses: { ...pendingChoiceContext.allGuesses }
+    };
+
+    rebuildRunState();
+
+    pendingOption = option;
+    interactionPhase = "reaction";
+    updateUI(true);
+
+    const display = document.getElementById("display");
+    if (display) display.scrollTop = 0;
+}
+
+function getSavedWords() {
+    try {
+        return JSON.parse(
+            localStorage.getItem("vane_solved_words") || "{}"
+        );
+    } catch (e) {
+        return {};
+    }
+}
+
+function getMasteredWordSet() {
+    const saved = getSavedWords();
+    const result = new Set();
+
+    Object.keys(wordBank).forEach(key => {
+        if (saved[key] && isAcceptedGuess(key, saved[key])) {
+            result.add(key);
+        }
+    });
+
+    return result;
+}
+
+function persistMasteredWord(key) {
+    if (!wordBank[key]) return;
+
+    const solved = getSavedWords();
+
+    solved[key] = wordBank[key].canonical;
+
+    localStorage.setItem(
+        "vane_solved_words",
+        JSON.stringify(solved)
+    );
+}
+
+function hasCompatibleSavedWords() {
+    return getMasteredWordSet().size > 0;
+}
+
+function sceneContainsWord(text, key) {
+    return new RegExp("\\[\\[" + key + "(?:\\||\\]\\])").test(text);
+}
+
+const wordTotalClueScenes = {};
+
+Object.keys(wordBank).forEach(key => {
+    wordTotalClueScenes[key] = scenario.filter(
+        scene => sceneContainsWord(scene.q, key)
+    ).length;
+});
+
+function checkEnvironment() {
+    const isMobile =
+        /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ||
+        window.innerWidth < 800;
+
+    const title = document.getElementById("check-title");
+    const entryBtn = document.getElementById("entry-btn");
+    const errorMsg = document.getElementById("error-msg");
+
+    if (isMobile) {
+        title.innerText = "ACCESS DENIED";
+        errorMsg.style.display = "block";
+    } else {
+        title.innerText = "ATTENTION";
+        entryBtn.style.display = "inline-block";
+    }
+}
+
+function shuffle(array) {
+    const arr = array.slice();
+    let n = arr.length;
+
+    while (n) {
+        const i = Math.floor(Math.random() * n--);
+        [arr[n], arr[i]] = [arr[i], arr[n]];
+    }
+
+    return arr;
+}
+
+function canCheckNotebookWord(key) {
+    if (!wordBank[key] || !getEncounteredScenesForWord(key).length) return false;
+    return scenario.some((scene, index) =>
+        index <= currentStep && (
+            (scene.resolveChecks || []).includes(key) ||
+            scene.finalResolve?.key === key
+        )
+    );
+}
+function availableNotebookHintLevel(key) {
+    const seen = getEncounteredScenesForWord(key).length;
+    if (!seen) return 0;
+    if (currentStep === scenario.length - 1 || seen >= 3) return 3;
+    if (canCheckNotebookWord(key)) return 2;
+    return 1;
+}
+function checkNotebookGuess(key) {
+    if (!canCheckNotebookWord(key) || vaneKnownWords.has(key)) return;
+    const guess = String(userDict[key] || "").trim();
+    let message;
+    if (!guess) {
+        message = "まだ推測を書いていない。";
+    } else if (isAcceptedGuess(key, guess)) {
+        message = "この推測は正しいみたいだ。";
+    } else if ((wordBank[key].nearMisses || []).some(value =>
+        normalizeGuess(value) === normalizeGuess(guess)
+    )) {
+        message = "少し意味が違うようだ。";
+    } else {
+        message = "この言葉は別の意味のようだ。";
+    }
+    notebookChecks[key] = { guess, message };
+    renderActiveDictEntry();
+}
+function revealNotebookHint(key) {
+    const available = availableNotebookHintLevel(key);
+    const current = notebookHintLevels[key] || 0;
+    if (available <= current) return;
+    notebookHintLevels[key] = current + 1;
+    renderActiveDictEntry();
+}
+function toggleFinalNotebookReview() {
+    if (currentStep !== scenario.length - 1 || interactionPhase !== "conversation") return;
+    finalReviewOpen = !finalReviewOpen;
+    updateUI(true);
+}
+function refreshFinalNotebookRow(key) {
+    if (!finalReviewOpen || currentStep !== scenario.length - 1) return;
+    const row = document.querySelector(`[data-final-word-key="${key}"] .final-notebook-status`);
+    if (!row) return;
+    row.innerText = vaneKnownWords.has(key) ? "理解済み"
+        : String(userDict[key] || "").trim() ? "推測あり" : "未推測";
+}
+
+function getEncounteredScenesForWord(key) {
+    return scenario.reduce((result, scene, index) => {
+        if (
+            seenSceneIds.has(index) &&
+            sceneContainsWord(scene.q, key)
+        ) {
+            result.push(index);
+        }
+        return result;
+    }, []);
+}
+
+function getVaneNotebookMemo(key) {
+    if (vaneKnownWords.has(key)) {
+        return "……うん。もう、この言葉は分かる。";
+    }
+
+    const count = getEncounteredScenesForWord(key).length;
+
+    if (count <= 1) {
+        return "初めて聞いた音だ。ノートに書いておこうかな。";
+    }
+
+    if (count === 2) {
+        return "前にも聞いたな。同じ意味のはずだ。";
+    }
+
+    return "ランちゃんの言葉を思い出せば、何かわかるかも。";
+}
+
+function renderNotebookRecordText(text, focusKey) {
+    let rendered = escapeHtml(text || "");
+
+    for (const key of Object.keys(wordBank)) {
+        const reg = new RegExp(
+            "\\[\\[" + key + "(?:\\|([^\\]]+))?\\]\\]",
+            "g"
+        );
+
+        rendered = rendered.replace(reg, (match, surfaceForm) => {
+            const display = vaneKnownWords.has(key)
+                ? (surfaceForm || wordBank[key].canonical)
+                : wordBank[key].q;
+
+            return `<span class="dict-record-word${key === focusKey ? " focus" : ""}">${escapeHtml(display)}</span>`;
+        });
+    }
+
+    return rendered.replace(/\n/g, "<br>");
+}
+
+function handleGuessBlur(key) {
+    if (
+        vaneKnownWords.has(key) ||
+        !String(userDict[key] || "").trim()
+    ) {
+        return;
+    }
+
+    const feedback = document.getElementById(
+        `dict-feedback-${key}`
+    );
+
+    if (!feedback) return;
+
+    feedback.innerText = "……とりあえず、書き留めておこう。";
+    feedback.classList.add("show");
+
+    setTimeout(() => {
+        const element = document.getElementById(
+            `dict-feedback-${key}`
+        );
+
+        if (element) {
+            element.classList.remove("show");
+        }
+    }, 1800);
+}
+
+function playUnderstandingFlash(keys) {
+    const unique = [...new Set(keys)].filter(
+        key => wordBank[key]
+    );
+
+    if (!unique.length) return;
+
+    const overlay = document.getElementById(
+        "understanding-flash"
+    );
+
+    const words = document.getElementById(
+        "understanding-flash-words"
+    );
+
+    if (!overlay || !words) return;
+
+    words.innerHTML = unique.map(key => `
+        <div class="understanding-flash-row">
+            <span class="understanding-flash-symbol">${wordBank[key].q}</span>
+            <span class="understanding-flash-arrow">→</span>
+            <span class="understanding-flash-word">${wordBank[key].canonical}</span>
+        </div>
+    `).join("");
+
+    clearTimeout(understandingFlashTimer);
+
+    overlay.classList.remove("visible");
+    void overlay.offsetWidth;
+    overlay.classList.add("visible");
+    overlay.setAttribute("aria-hidden", "false");
+
+    understandingFlashTimer = setTimeout(() => {
+        overlay.classList.remove("visible");
+        overlay.setAttribute("aria-hidden", "true");
+    }, 1300);
+}
+
+function jumpToLogScene(sceneIndex, key) {
+    if (key && wordBank[key]) {
+        activeDictKey = key;
+    }
+
+    switchMainView("log");
+    renderPastLog();
+
+    requestAnimationFrame(() => {
+        const target = document.getElementById(
+            `log-scene-${sceneIndex}`
+        );
+
+        if (!target) return;
+
+        target.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+        });
+
+        target.classList.remove("log-focus");
+        void target.offsetWidth;
+        target.classList.add("log-focus");
+
+        setTimeout(() => {
+            target.classList.remove("log-focus");
+        }, 1200);
+    });
+}
+
+function jumpToDict(key) {
+    if (!wordBank[key]) return;
+
+    if (
+        !getEncounteredScenesForWord(key).length &&
+        !vaneKnownWords.has(key)
+    ) {
+        return;
+    }
+
+    activeDictKey = key;
+
+    renderActiveDictEntry();
+    renderPastLog();
+    renderWordList();
+
+    const input = document.getElementById(
+        `input-${key}`
+    );
+
+    if (input && !input.disabled) {
+        input.focus();
+    }
+}
+
+function renderDictPlaceholder() {
+    const list = document.getElementById("dict-list");
+    if (!list) return;
+
+    list.innerHTML = `
+        <div class="dict-placeholder">
+            <div class="dict-placeholder-symbol">―――</div>
+            ランスロットの言葉の一部が聞き取れない……。<br>
+            聞き取れない言葉を選択してくれ。
+        </div>
+    `;
+}
+
+function renderActiveDictEntry() {
+    const list = document.getElementById("dict-list");
+
+    if (!list) return;
+
+    if (!activeDictKey || !wordBank[activeDictKey]) {
+        renderDictPlaceholder();
+        return;
+    }
+
+    const key = activeDictKey;
+    const encountered = getEncounteredScenesForWord(key);
+
+    const recordButtons = encountered.length
+        ? encountered.map(index => `
+            <button
+                type="button"
+                class="dict-record-item"
+                onclick="jumpToLogScene(${index},'${key}')"
+            >
+                <span class="dict-record-scene">
+                    SCENE ${String(index + 1).padStart(2, "0")}
+                </span>
+                <span class="dict-record-text">
+                    ${renderNotebookRecordText(scenario[index].q, key)}
+                </span>
+            </button>
+        `).join("")
+        : `<span class="dict-record-empty">記録がありません。</span>`;
+
+    list.innerHTML = "";
+
+    const div = document.createElement("div");
+
+    div.className = "dict-entry";
+    div.id = `entry-${key}`;
+
+    div.innerHTML = `
+        <label class="dict-symbol-label">
+            ${wordBank[key].q}
+        </label>
+
+        <div class="dict-field-label">ヴェインの推測</div>
+
+        <input
+            type="text"
+            id="input-${key}"
+            placeholder="思いついた意味を書き留める"
+            oninput="updateGuess('${key}',this.value)"
+            onblur="handleGuessBlur('${key}')"
+        >
+
+        <div class="dict-status" id="status-${key}"></div>
+
+        <div class="dict-vane-memo">
+            <div class="dict-vane-memo-title">
+                ヴェインのメモ
+            </div>
+            <div class="dict-vane-memo-text">
+                ${getVaneNotebookMemo(key)}
+            </div>
+        </div>
+
+        <div class="notebook-tools">
+            <div class="notebook-tool-actions">
+                <button type="button" class="notebook-tool-button"
+                    onclick="checkNotebookGuess('${key}')"
+                    ${canCheckNotebookWord(key) && !vaneKnownWords.has(key) ? "" : "disabled"}>答え合わせ</button>
+                <button type="button" class="notebook-tool-button"
+                    onclick="revealNotebookHint('${key}')"
+                    ${availableNotebookHintLevel(key) > (notebookHintLevels[key] || 0) ? "" : "disabled"}>ヒントをひとつ見る</button>
+            </div>
+            <div class="notebook-tool-caption">答え合わせは会話の手掛かりが揃うと解放されます。初回は正誤を表示しません。</div>
+            <div class="notebook-check-result" id="notebook-check-result-${key}" aria-live="polite"></div>
+            <div class="notebook-hints" id="notebook-hints-${key}"></div>
+        </div>
+        <div
+            class="dict-feedback"
+            id="dict-feedback-${key}"
+        ></div>
+
+        <div class="dict-records">
+            <div class="dict-records-title">ランちゃんがこの言葉を使ったとき</div>
+            <div class="dict-record-list">
+                ${recordButtons}
+            </div>
+        </div>
+    `;
+
+    list.appendChild(div);
+    renderDictEntryState(key);
+    const checkElement = document.getElementById(`notebook-check-result-${key}`);
+    const currentGuess = String(userDict[key] || "").trim();
+    if (checkElement) {
+        const check = notebookChecks[key];
+        checkElement.innerText = check && check.guess === currentGuess
+            ? check.message : "";
+    }
+    const hintsElement = document.getElementById(`notebook-hints-${key}`);
+    if (hintsElement) {
+        const n = notebookHintLevels[key] || 0;
+        hintsElement.innerHTML = (wordHints[key] || []).slice(0, n)
+            .map((hint, i) => `<p class="notebook-hint-row"><b>ヒント ${i + 1}</b>　${escapeHtml(hint)}</p>`).join("");
+    }
+}
+
+function renderLogDialogueText(text) {
+    let rendered = escapeHtml(text || "");
+
+    for (const key of Object.keys(wordBank)) {
+        const reg = new RegExp(
+            "\\[\\[" + key + "(?:\\|([^\\]]+))?\\]\\]",
+            "g"
+        );
+
+        rendered = rendered.replace(reg, (match, surfaceForm) => {
+            const resolved = vaneKnownWords.has(key);
+            const cls = resolved ? "resolved" : "symbol";
+            const active = key === activeDictKey
+                ? " log-symbol-active"
+                : "";
+
+            const value = resolved
+                ? (surfaceForm || wordBank[key].canonical)
+                : wordBank[key].q;
+
+            return `<span class="${cls}${active}" onclick="jumpToDict('${key}')">${escapeHtml(value)}</span>`;
+        });
+    }
+
+    return rendered.replace(/\n/g, "<br>");
+}
+
+function renderPastLog() {
+    const panel = document.getElementById("log-panel");
+    if (!panel) return;
+
+    const scroll = panel.scrollTop;
+    const maxIndex = Math.min(
+        currentStep,
+        scenario.length - 1
+    );
+
+    if (maxIndex < 0 || !scenario.length) {
+        panel.innerHTML = `
+            <div class="log-empty">
+                まだ記録はありません。
+            </div>
+        `;
+        return;
+    }
+
+    const entries = [];
+
+    for (let i = 0; i <= maxIndex; i++) {
+        if (
+            !seenSceneIds.has(i) &&
+            i !== currentStep
+        ) {
+            continue;
+        }
+
+        const scene = scenario[i];
+        if (!scene) continue;
+
+        const thought = escapeHtml(
+            scene.vaneThought || ""
+        ).replace(/\n/g, "<br>");
+
+        entries.push(`
+            <div class="log-entry" id="log-scene-${i}">
+                <div class="log-scene">
+                    SCENE ${String(i + 1).padStart(2, "0")}
+                </div>
+                <div class="log-speaker">LANCELOT</div>
+                <div class="log-dialogue">
+                    ${renderLogDialogueText(scene.q)}
+                </div>
+                ${thought ? `
+                    <div class="log-thought-label">VANE</div>
+                    <div class="log-thought">${thought}</div>
+                `: ""}
+            </div>
+        `);
+    }
+
+    panel.innerHTML = entries.length
+        ? entries.join("")
+        : `<div class="log-empty">まだ記録はありません。</div>`;
+
+    panel.scrollTop = scroll;
+}
+
+function getVisibleWordKeys() {
+    return Object.keys(wordBank);
+}
+
+function renderWordList() {
+    const list = document.getElementById("word-list");
+    if (!list) return;
+
+    list.innerHTML = getVisibleWordKeys().map(key => {
+        const understood = vaneKnownWords.has(key);
+        const encountered =
+            getEncounteredScenesForWord(key).length > 0;
+
+        const selectable = encountered || understood;
+
+        const guess = understood
+            ? wordBank[key].canonical
+            : String(userDict[key] || "").trim();
+
+        const status = understood
+            ? "理解"
+            : encountered
+                ? (guess ? "推測中" : "未推測")
+                : "？？？";
+
+        const statusCls = understood
+            ? " understood"
+            : (encountered && guess ? " guessing" : "");
+
+        const guessCls = understood
+            ? " understood"
+            : (guess ? "" : " empty");
+
+        const active = key === activeDictKey ? " active" : "";
+        const unencountered = selectable ? "" : " unencountered";
+
+        return `
+            <button
+                type="button"
+                class="word-row${active}${unencountered}"
+                onclick="jumpToDict('${key}')"
+                ${selectable ? "" : "disabled"}
+            >
+                <span class="word-symbol">
+                    ${wordBank[key].q}
+                </span>
+                <span class="word-guess${guessCls}">
+                    ${escapeHtml(guess || "―")}
+                </span>
+                <span class="word-status${statusCls}">
+                    ${status}
+                </span>
+            </button>
+        `;
+    }).join("");
+}
+
+window.onload = () => {
+    masteredWords = getMasteredWordSet();
+    checkEnvironment();
+
+    const entry = document.getElementById("entry-btn");
+    const recollectionEntry = document.getElementById(
+        "recollection-entry-btn"
+    );
+
+    const mobile =
+        /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ||
+        window.innerWidth < 800;
+
+    if (
+        !mobile &&
+        typeof recollectionProgress !== "undefined" &&
+        recollectionProgress.gameCleared
+    ) {
+        entry.innerText = "はじめから";
+        recollectionEntry.style.display = "inline-block";
+    }
+
+    entry.onclick = () => {
+        document.getElementById(
+            "device-check-overlay"
+        ).style.display = "none";
+
+        document.getElementById(
+            "intro-overlay"
+        ).style.display = "flex";
+    };
+
+    recollectionEntry.onclick = () => openContinueSetup();
+    syncOneYearUnlockUI();
+
+    document.getElementById("to-tutorial").onclick = () => {
+        document.getElementById(
+            "intro-overlay"
+        ).style.display = "none";
+
+        document.getElementById(
+            "tutorial-overlay"
+        ).style.display = "flex";
+    };
+
+    document.getElementById("start-init-btn").onclick = () => {
+        if (hasCompatibleSavedWords()) {
+            document.getElementById(
+                "tutorial-overlay"
+            ).style.display = "none";
+
+            document.getElementById(
+                "load-overlay"
+            ).style.display = "flex";
+        } else {
+            startGame(false);
+        }
+    };
+
+    document.getElementById("load-yes").onclick =
+        () => startGame(true);
+
+    document.getElementById("load-no").onclick =
+        () => startGame(false);
+
+    try {
+        const saved = JSON.parse(
+            localStorage.getItem(
+                "vane_collection_v3"
+            ) || "[]"
+        );
+
+        colSet = new Set(
+            Array.isArray(saved) ? saved : []
+        );
+    } catch (e) {
+        colSet = new Set();
+    }
+
+    updateColUI();
+    const galleryEntry = document.getElementById("ending-gallery-entry-btn");
+    if (galleryEntry && getEndingGalleryAvailableIds().size > 0) {
+        galleryEntry.style.display = "inline-block";
+    }
+    initDict({});
+    renderPastLog();
+    renderWordList();
+    switchMainView("play");
+};
+
+function startGame(inherit) {
+    currentStep = 0;
+    viewingStep = 0;
+
+    document.getElementById(
+        "tutorial-overlay"
+    ).style.display = "none";
+
+    document.getElementById(
+        "load-overlay"
+    ).style.display = "none";
+
+    document.getElementById(
+        "game-container"
+    ).style.display = "flex";
+
+    if (typeof runMode !== "undefined") {
+        runMode = "story";
+    }
+
+    selectedAnswers =
+        new Array(scenario.length).fill(null);
+
+    sceneChoiceRecords =
+        new Array(scenario.length).fill(null);
+
+    masteredWords = getMasteredWordSet();
+    vaneKnownWords = new Set();
+    vaneUnderstoodAt = {};
+    wordSeenCounts = {};
+    seenSceneIds = new Set();
+
+    notebookChecks = {};
+    notebookHintLevels = {};
+    finalReviewOpen = false;
+    interactionPhase = "conversation";
+    pendingOption = null;
+    pendingResolvedKeys = [];
+    pendingFinalLine = "";
+    pendingChoiceContext = null;
+    activeDictKey = null;
+    mainViewMode = "play";
+
+    rebuildRunState();
+
+    initDict(inherit ? getSavedWords() : {});
+
+    registerSceneWords(currentStep);
+    renderTabs();
+    updateUI();
+    renderPastLog();
+    renderWordList();
+    switchMainView("play");
+}
+
+function initDict(initialWords) {
+    userDict = {};
+    activeDictKey = null;
+
+    for (const key of Object.keys(wordBank)) {
+        const inherited = !!(
+            initialWords[key] &&
+            isAcceptedGuess(key, initialWords[key])
+        );
+
+        userDict[key] = inherited
+            ? wordBank[key].canonical
+            : "";
+
+        if (inherited) {
+            masteredWords.add(key);
+            vaneKnownWords.add(key);
+            vaneUnderstoodAt[key] = -1;
+        }
+    }
+
+    renderDictPlaceholder();
+    renderWordList();
+}
+
+function renderDictEntryState(key) {
+    if (key !== activeDictKey) return;
+
+    const entry = document.getElementById(
+        `entry-${key}`
+    );
+
+    const input = document.getElementById(
+        `input-${key}`
+    );
+
+    const status = document.getElementById(
+        `status-${key}`
+    );
+
+    if (!entry || !input || !status) return;
+
+    entry.classList.remove("correct", "guessing");
+    input.classList.remove("wrong-text");
+
+    if (vaneKnownWords.has(key)) {
+        entry.classList.add("correct");
+        status.innerText = "状態　理解した";
+        input.disabled = true;
+
+        if (input.value !== wordBank[key].canonical) {
+            input.value = wordBank[key].canonical;
+        }
+    } else if (String(userDict[key] || "").trim()) {
+        entry.classList.add("guessing");
+        status.innerText = "状態　推測中";
+        input.disabled = false;
+
+        if (input.value !== userDict[key]) {
+            input.value = userDict[key];
+        }
+    } else {
+        status.innerText = "状態　未推測";
+        input.disabled = false;
+
+        if (input.value) {
+            input.value = "";
+        }
+    }
+}
+
+function updateGuess(key, val) {
+    if (
+        !wordBank[key] ||
+        vaneKnownWords.has(key)
+    ) {
+        return;
+    }
+
+    userDict[key] = String(val).trim();
+    delete notebookChecks[key];
+    const checkElement = document.getElementById(`notebook-check-result-${key}`);
+    if (checkElement) checkElement.innerText = "";
+
+    renderDictEntryState(key);
+    renderWordList();
+    refreshFinalNotebookRow(key);
+}
+
+function registerSceneWords(index) {
+    if (
+        index < 0 ||
+        index >= scenario.length ||
+        seenSceneIds.has(index)
+    ) {
+        return;
+    }
+
+    seenSceneIds.add(index);
+
+    for (const key of Object.keys(wordBank)) {
+        if (sceneContainsWord(scenario[index].q, key)) {
+            wordSeenCounts[key] =
+                (wordSeenCounts[key] || 0) + 1;
+        }
+    }
+
+    renderPastLog();
+    renderWordList();
+
+    if (activeDictKey) {
+        renderActiveDictEntry();
+    }
+}
+
+function resolveWord(key, guessOverride) {
+    if (vaneKnownWords.has(key)) return false;
+
+    const guess = guessOverride === undefined
+        ? String(userDict[key] || "").trim()
+        : String(guessOverride || "").trim();
+
+    if (!isAcceptedGuess(key, guess)) {
+        return false;
+    }
+
+    vaneKnownWords.add(key);
+    vaneUnderstoodAt[key] = currentStep;
+    userDict[key] = wordBank[key].canonical;
+
+    if (!masteredWords.has(key)) {
+        masteredWords.add(key);
+        persistMasteredWord(key);
+    }
+
+    renderDictEntryState(key);
+    renderPastLog();
+    renderWordList();
+
+    return true;
+}
+
+function evaluateUnderstanding(scene, lockedGuesses) {
+    let candidates;
+
+    if (Array.isArray(scene.resolveChecks)) {
+        candidates = [...scene.resolveChecks];
+    } else {
+        candidates = Object.keys(wordBank).filter(key => {
+            const available =
+                wordTotalClueScenes[key] || 1;
+
+            const minimum = Math.min(
+                wordBank[key].minClues || 2,
+                available
+            );
+
+            return (
+                (wordSeenCounts[key] || 0) >= minimum
+            );
+        });
+    }
+
+    if (
+        scene.finalResolve &&
+        scene.finalResolve.special &&
+        scene.finalResolve.key
+    ) {
+        candidates = candidates.filter(
+            key => key !== scene.finalResolve.key
+        );
+    }
+
+    const resolvedNow = [];
+
+    candidates.forEach(key => {
+        const guess = lockedGuesses
+            ? lockedGuesses[key]
+            : undefined;
+
+        if (resolveWord(key, guess)) {
+            resolvedNow.push(key);
+        }
+    });
+
+    return resolvedNow;
+}
+
+function getReactionText(option) {
+    return option?.reaction ||
+        "（ランちゃんは、俺の返事を静かに聞いている。）";
+}
+
+function renderDialogueText(text) {
+    let rendered = escapeHtml(text || "");
+
+    for (const key of Object.keys(wordBank)) {
+        const reg = new RegExp(
+            "\\[\\[" + key + "(?:\\|([^\\]]+))?\\]\\]",
+            "g"
+        );
+
+        rendered = rendered.replace(
+            reg,
+            (match, surfaceForm) => {
+                const resolved = vaneKnownWords.has(key);
+                const cls = resolved ? "resolved" : "symbol";
+
+                const value = resolved
+                    ? (surfaceForm || wordBank[key].canonical)
+                    : wordBank[key].q;
+
+                return `<span class="${cls}" onclick="jumpToDict('${key}')">${escapeHtml(value)}</span>`;
+            }
+        );
+    }
+
+    return rendered.replace(/\n/g, "<br>");
+}
+
+function buildUnderstandingNarrative(key) {
+    if (!wordBank[key]) return "";
+
+    const word = wordBank[key];
+
+    return `
+        <div class="understanding-item">
+            <div class="understanding-lead">……あ。</div>
+
+            <div class="understanding-copy">
+                この音、前も聞いたやつだよな……。<br>
+                ランちゃんが伝えたかったのは、きっと……。
+            </div>
+
+            <div class="understanding-symbol">
+                ${word.q}
+            </div>
+
+            <div class="understanding-bridge">
+                あれは――
+            </div>
+
+            <div class="understanding-word">
+                ${word.canonical}
+            </div>
+
+            <div class="understanding-copy">
+                そういう意味だったんだ。
+            </div>
+        </div>
+    `;
+}
+
+function continueFromReaction() {
+    if (
+        interactionPhase !== "reaction" ||
+        currentStep >= scenario.length
+    ) {
+        return;
+    }
+
+    const scene = scenario[currentStep];
+
+    const lockedGuesses =
+        pendingChoiceContext?.allGuesses ||
+        { ...userDict };
+
+    pendingResolvedKeys = evaluateUnderstanding(
+        scene,
+        lockedGuesses
+    );
+
+    pendingFinalLine = "";
+
+    const flashKeys = [...pendingResolvedKeys];
+
+    if (
+        scene.finalResolve?.special &&
+        scene.finalResolve.key
+    ) {
+        const finalKey = scene.finalResolve.key;
+
+        if (
+            !vaneKnownWords.has(finalKey) &&
+            isAcceptedGuess(
+                finalKey,
+                lockedGuesses[finalKey]
+            )
+        ) {
+            if (
+                resolveWord(
+                    finalKey,
+                    lockedGuesses[finalKey]
+                )
+            ) {
+                pendingFinalLine =
+                    scene.finalResolve.line || "";
+
+                flashKeys.push(finalKey);
+            }
+        }
+    }
+
+    if (
+        pendingResolvedKeys.length ||
+        pendingFinalLine
+    ) {
+        interactionPhase = "resolution";
+        updateUI(true);
+        playUnderstandingFlash(flashKeys);
+    } else {
+        advanceScene();
+    }
+}
+
+function advanceScene() {
+    pendingOption = null;
+    pendingResolvedKeys = [];
+    pendingFinalLine = "";
+    pendingChoiceContext = null;
+    interactionPhase = "conversation";
+
+    currentStep++;
+    viewingStep = currentStep;
+
+    if (currentStep < scenario.length) {
+        registerSceneWords(currentStep);
+        renderTabs();
+        updateUI(true);
+        renderPastLog();
+        renderWordList();
+
+        const display = document.getElementById(
+            "display"
+        );
+
+        if (display) {
+            display.scrollTop = 0;
+        }
+
+        const panel = document.getElementById(
+            "log-panel"
+        );
+
+        if (panel) {
+            panel.scrollTop = panel.scrollHeight;
+        }
+    } else {
+        if (typeof canChoosePuddingEnding === "function" && canChoosePuddingEnding()) {
+            renderPuddingEndingChoice();
+        } else {
+            showEnd();
+        }
+    }
+}
+
+function renderPuddingEndingChoice() {
+    const display = document.getElementById("display");
+    const area = document.getElementById("action-area");
+    if (!display || !area) return;
+    display.innerHTML = `<div class="story-bubble" style="margin:auto 0;max-width:90%">
+        <div class="block-label">LAST PAGE</div>
+        最後の言葉を聞き終えて、ヴェインはノートを開いた。<br>
+        ノートには、まだ確かめきれていない言葉が残っている。<br>
+        今までの行き違いを確かめてみようか。それとも、今の気持ちのまま前へ進もうか。
+    </div>`;
+    area.innerHTML = "";
+    const review = document.createElement("button");
+    review.className = "opt-btn";
+    review.innerText = "ノートに残る食い違いを確かめる";
+    review.onclick = () => showEnd(5);
+    const goOn = document.createElement("button");
+    goOn.className = "opt-btn";
+    goOn.innerText = "このまま物語を結ぶ";
+    goOn.onclick = () => showEnd();
+    area.appendChild(review);
+    area.appendChild(goOn);
+    display.scrollTop = 0;
+}
+
+function renderTabs() {
+    const current = document.getElementById(
+        "progress-current"
+    );
+
+    const total = document.getElementById(
+        "progress-total"
+    );
+
+    if (current) {
+        current.innerText =
+            String(viewingStep + 1).padStart(2, "0");
+    }
+
+    if (total) {
+        total.innerText =
+            String(scenario.length).padStart(2, "0");
+    }
+}
+
+function updateUI(redo = true) {
+    if (currentStep >= scenario.length) return;
+
+    renderTabs();
+
+    const scene = scenario[viewingStep];
+
+    const header = document.getElementById(
+        "chara-header"
+    );
+
+    const speaker = document.getElementById(
+        "speaker-name"
+    );
+
+    const message = document.getElementById(
+        "message-text"
+    );
+
+    const thoughtBlock = document.getElementById(
+        "vane-thought-block"
+    );
+
+    const thought = document.getElementById(
+        "vane-thought-text"
+    );
+
+    const storyBlock = document.getElementById(
+        "story-block"
+    );
+
+    const storyText = document.getElementById(
+        "story-text"
+    );
+
+    const resolutionBlock = document.getElementById(
+        "resolution-block"
+    );
+
+    const resolutionText = document.getElementById(
+        "resolution-text"
+    );
+
+    if (
+        !header ||
+        !speaker ||
+        !message ||
+        !thoughtBlock ||
+        !thought ||
+        !storyBlock ||
+        !storyText ||
+        !resolutionBlock ||
+        !resolutionText
+    ) {
+        return;
+    }
+
+
+    const isCurrent = viewingStep === currentStep;
+
+    speaker.innerText = "LANCELOT";
+    message.innerHTML = renderDialogueText(scene.q);
+
+    thought.innerHTML = escapeHtml(
+        scene.vaneThought || ""
+    ).replace(/\n/g, "<br>");
+
+    header.style.display = "none";
+    message.style.display = "none";
+    thoughtBlock.style.display = "none";
+    storyBlock.style.display = "none";
+    storyText.innerHTML = "";
+    resolutionBlock.style.display = "none";
+    resolutionText.innerHTML = "";
+
+    const selectedId = selectedAnswers[viewingStep];
+
+    const selectedOption =
+        isCurrent && pendingOption
+            ? pendingOption
+            : findSceneOption(scene, selectedId);
+
+    const showConversation = isCurrent
+        ? (
+            interactionPhase === "conversation" ||
+            interactionPhase === "choice"
+        )
+        : !selectedOption;
+
+    const showStory = !!selectedOption && (
+        !isCurrent ||
+        interactionPhase === "reaction"
+    );
+
+    const showResolution =
+        isCurrent && interactionPhase === "resolution";
+
+    if (showConversation) {
+        header.style.display = "flex";
+        message.style.display = "block";
+        thoughtBlock.style.display = "block";
+    }
+
+    if (showStory) {
+        const parts = [
+            `<div class="selected-reply">${escapeHtml(selectedOption.t)}</div>`
+        ];
+
+        const reaction = getReactionText(selectedOption);
+
+        if (reaction) {
+            parts.push(
+                escapeHtml(reaction).replace(/\n/g, "<br>")
+            );
+        }
+
+        if (scene.afterStory) {
+            parts.push(
+                escapeHtml(scene.afterStory)
+                    .replace(/\n/g, "<br>")
+            );
+        }
+
+        if (scene.nextHook) {
+            parts.push(
+                escapeHtml(scene.nextHook)
+                    .replace(/\n/g, "<br>")
+            );
+        }
+
+        storyText.innerHTML = parts.join("<br><br>");
+        storyBlock.style.display = "block";
+    }
+
+    if (showResolution) {
+        const parts = [];
+
+        if (pendingResolvedKeys.length) {
+            parts.push(
+                pendingResolvedKeys
+                    .map(buildUnderstandingNarrative)
+                    .join(
+                        '<div class="understanding-divider"></div>'
+                    )
+            );
+        }
+
+        if (pendingFinalLine) {
+            parts.push(
+                `<div class="final-resolve-line">${escapeHtml(pendingFinalLine)}</div>`
+            );
+        }
+
+        resolutionText.innerHTML = parts.join("");
+        resolutionBlock.style.display = "block";
+    }
+
+    renderPastLog();
+    renderWordList();
+
+    const light = Math.min(
+        85,
+        10 + lovePoints / 5
+    );
+
+    const sat = Math.min(
+        100,
+        20 + lovePoints / 4
+    );
+
+    const hue = 210 - lovePoints / 10;
+
+    document.documentElement.style.setProperty(
+        "--love-light",
+        `${light}%`
+    );
+
+    document.documentElement.style.setProperty(
+        "--love-sat",
+        `${sat}%`
+    );
+
+    document.documentElement.style.setProperty(
+        "--love-hue",
+        `${hue}`
+    );
+
+    if (!redo) return;
+
+    const area = document.getElementById(
+        "action-area"
+    );
+
+    if (!area) return;
+
+    area.innerHTML = "";
+
+    if (isCurrent) {
+        if (interactionPhase === "conversation") {
+            const guide = document.createElement("p");
+
+            guide.className = "reply-guide";
+            guide.innerText =
+                "ノートに書き終わったら、ランちゃんに返事しないとな。";
+
+            area.appendChild(guide);
+
+            const button = document.createElement(
+                "button"
+            );
+
+            button.className =
+                "opt-btn reply-start-button";
+
+            button.innerText =
+                "返答へ進む";
+
+            button.onclick =
+                lockChoicesForCurrentScene;
+
+            area.appendChild(button);
+
+            if (currentStep === scenario.length - 1) {
+                const reviewButton = document.createElement("button");
+                reviewButton.className = "opt-btn";
+                reviewButton.innerText = finalReviewOpen
+                    ? "最終確認を閉じる" : "ノートを最終確認する（任意）";
+                reviewButton.onclick = toggleFinalNotebookReview;
+                area.appendChild(reviewButton);
+                if (finalReviewOpen) {
+                    const review = document.createElement("div");
+                    review.className = "final-notebook-panel";
+                    const rows = Object.keys(wordBank).map(key => {
+                        const status = vaneKnownWords.has(key) ? "理解済み"
+                            : String(userDict[key] || "").trim() ? "推測あり" : "未推測";
+                        return `<div class="final-notebook-word" data-final-word-key="${key}">
+                            <span>${escapeHtml(wordBank[key].q)}　<span class="final-notebook-status">${status}</span></span>
+                            <button type="button" onclick="jumpToDict('${key}')">ノートで確認</button>
+                        </div>`;
+                    }).join("");
+                    review.innerHTML = `<div class="final-notebook-summary">未確定の言葉は、右側のノートで答え合わせやヒントを確認して書き直せます。返答を確定すると、この場面の解釈は固定されます。</div>${rows}`;
+                    area.appendChild(review);
+                }
+            }
+
+        } else if (interactionPhase === "choice") {
+            if (
+                !pendingChoiceContext ||
+                pendingChoiceContext.sceneIndex !== currentStep
+            ) {
+                return;
+            }
+
+            pendingChoiceContext.options.forEach(
+                choice => {
+                    const button = document.createElement(
+                        "button"
+                    );
+
+                    button.className = "opt-btn";
+
+                    button.innerText =
+                        `${choice.option.t}`;
+
+                    button.onclick =
+                        () => chooseReply(choice);
+
+                    area.appendChild(button);
+                }
+            );
+
+        } else if (
+            interactionPhase === "reaction" ||
+            interactionPhase === "resolution"
+        ) {
+            const next = document.createElement(
+                "button"
+            );
+
+            next.className = "opt-btn";
+            next.innerText = "次へ";
+
+            next.onclick =
+                interactionPhase === "reaction"
+                    ? continueFromReaction
+                    : advanceScene;
+
+            area.appendChild(next);
+        }
+
+    } else {
+        const options = getAllSceneOptions(scene);
+
+        options.forEach(option => {
+            const button = document.createElement(
+                "button"
+            );
+
+            button.className = "opt-btn";
+            button.disabled = true;
+
+            if (option.id === selectedId) {
+                button.classList.add("my-choice");
+            }
+
+            button.innerText =
+                `${option.t}`;
+
+            area.appendChild(button);
+        });
+    }
+}
+
+function updateColUI() {
+    const collected = new Set(
+        [...getEndingGalleryAvailableIds()].map(id => String(id))
+    );
+
+    const count = collected.size;
+
+    document.querySelectorAll(
+        "[data-ending-id]"
+    ).forEach(element => {
+        element.classList.toggle(
+            "unlocked",
+            collected.has(
+                String(element.dataset.endingId)
+            )
+        );
+    });
+
+    document.querySelectorAll(
+        "[data-ending-count]"
+    ).forEach(element => {
+        element.innerText = `${count} / 7`;
+    });
+}
+</script>
+<script src="recollection.js"></script>
+<script src="endings.js"></script>
+<script>
+
+function getEndingTitle(id) {
+    return typeof endingsData !== "undefined" && endingsData[id]
+        ? endingsData[id].title
+        : `END ${String(id).padStart(2, "0")}`;
+}
+function syncEndingTitleUI() {
+    document.querySelectorAll("[data-ending-id]").forEach(element => {
+        element.title = getEndingTitle(element.dataset.endingId);
+    });
+}
+syncEndingTitleUI();
+
+const continuationPoints = Object.freeze([0, 10, 19]);
+const continuationPointNames = Object.freeze({
+    0: "はじまり",
+    10: "物語の途中",
+    19: "最後の言葉"
+});
+let continueSceneIndex = 0;
+let continueKnowledgeMode = "zero";
+let continueOpenedFromGame = false;
+
+function getContinuationSource() {
+    if (typeof recollectionProgress === "undefined") return null;
+
+    if (recollectionProgress.latestRunSnapshot &&
+        Number.isInteger(recollectionProgress.latestRunEndingId) &&
+        recollectionProgress.latestRunEndingId >= 1 &&
+        recollectionProgress.latestRunEndingId <= 6 &&
+        Array.isArray(recollectionProgress.latestRunSnapshot.selectedAnswers)) {
+        return {
+            endingId: recollectionProgress.latestRunEndingId,
+            snapshot: recollectionProgress.latestRunSnapshot
+        };
+    }
+
+    const snapshots = recollectionProgress.endingSnapshots || {};
+    const valid = Object.keys(snapshots).map(key => ({
+        endingId: Number(key),
+        snapshot: snapshots[key]
+    })).filter(item =>
+        item.endingId >= 1 && item.endingId <= 6 &&
+        item.snapshot && Array.isArray(item.snapshot.selectedAnswers)
+    );
+    valid.sort((a, b) =>
+        (Number(b.snapshot.clearedAt) || 0) - (Number(a.snapshot.clearedAt) || 0)
+        || b.endingId - a.endingId
+    );
+    return valid[0] || null;
+}
+
+function getContinuationKnownKeys(mode, index, source) {
+    if (mode === "zero") return [];
+    if (mode === "all") return [...getMasteredWordSet()];
+    if (mode !== "memory" || !source) return [];
+    const snapshot = source.snapshot;
+    return getSnapshotKnowledgeBeforeScene(snapshot, index)
+        .filter(key => getMasteredWordSet().has(key));
+}
+
+function openContinueSetup() {
+    if (typeof recollectionProgress === "undefined") return;
+    recollectionProgress = loadRecollectionProgress();
+    if (!recollectionProgress.gameCleared) return;
+    masteredWords = getMasteredWordSet();
+
+    const game = document.getElementById("game-container");
+    continueOpenedFromGame = !!(game && window.getComputedStyle(game).display !== "none");
+    continueSceneIndex = 0;
+    continueKnowledgeMode = "zero";
+    document.getElementById("device-check-overlay").style.display = "none";
+    const overlay = document.getElementById("continue-overlay");
+    overlay.style.display = "flex";
+    overlay.setAttribute("aria-hidden", "false");
+    refreshContinueSetup();
+}
+
+function closeContinueSetup() {
+    const overlay = document.getElementById("continue-overlay");
+    overlay.style.display = "none";
+    overlay.setAttribute("aria-hidden", "true");
+    if (!continueOpenedFromGame) {
+        document.getElementById("device-check-overlay").style.display = "flex";
+    }
+}
+
+function chooseContinueScene(index) {
+    if (!continuationPoints.includes(index)) return;
+    if (index !== 0 && !getContinuationSource()) return;
+    continueSceneIndex = index;
+    refreshContinueSetup();
+}
+
+function chooseContinueKnowledge(mode) {
+    if (!["zero", "memory", "all"].includes(mode)) return;
+    continueKnowledgeMode = mode;
+    refreshContinueSetup();
+}
+
+function refreshContinueSetup() {
+    const source = getContinuationSource();
+    const memoryCount = getContinuationKnownKeys("memory", continueSceneIndex, source).length;
+    const totalMastered = getMasteredWordSet().size;
+    const caption = document.getElementById("continue-memory-count");
+    const allCaption = document.getElementById("continue-all-count");
+    if (caption) {
+        caption.innerText = source
+            ? `この地点で理解していた ${memoryCount} 語`
+            : "保存された記憶がありません";
+    }
+    if (allCaption) {
+        allCaption.innerText = `解読実績 ${totalMastered} / ${Object.keys(wordBank).length} 語`;
+    }
+    document.querySelectorAll("[data-continue-scene]").forEach(button => {
+        const point = Number(button.dataset.continueScene);
+
+        button.disabled = point !== 0 && !source;
+        const chosen = point === continueSceneIndex;
+        button.classList.toggle("active", chosen);
+        button.setAttribute("aria-pressed", chosen ? "true" : "false");
+    });
+    if (!source && continueKnowledgeMode === "memory") continueKnowledgeMode = "zero";
+    document.querySelectorAll("[data-continue-knowledge]").forEach(button => {
+        const chosen = button.dataset.continueKnowledge === continueKnowledgeMode;
+        button.classList.toggle("active", chosen);
+        button.setAttribute("aria-pressed", chosen ? "true" : "false");
+        if (button.dataset.continueKnowledge === "memory") button.disabled = !source;
+    });
+    const understood = getContinuationKnownKeys(
+        continueKnowledgeMode, continueSceneIndex, source
+    ).length;
+    const location = continuationPointNames[continueSceneIndex];
+    const before = continueSceneIndex === 0
+        ? "はじめから選び直します。"
+        : source
+            ? `それ以前の返答は「${getEndingTitle(source.endingId)}」を回収した時の記録から引き継ぎます。`
+            : "以前の選択記録がないため、過去の返答は引き継ぎません。";
+    document.getElementById("continue-summary").innerText =
+        `${location}（SCENE ${String(continueSceneIndex + 1).padStart(2, "0")}）／` +
+        `理解済み ${understood} 語\n${before} ここから先の返答は選び直せます。`;
+}
+
+function restoreContinuationDisplay() {
+    if (document.getElementById("message-text") &&
+        document.getElementById("resolution-text")) return;
+    const display = document.getElementById("display");
+    display.innerHTML = `
+        <div id="chara-header"><span id="speaker-name">LANCELOT</span></div>
+        <div class="bubble" id="message-text">......</div>
+        <div id="vane-thought-block"><div class="block-label">VANE</div>
+            <div class="thought-bubble" id="vane-thought-text"></div></div>
+        <div id="story-block" style="display:none"><div class="block-label">STORY</div>
+            <div class="story-bubble" id="story-text"></div></div>
+        <div id="resolution-block" style="display:none"><div class="block-label">UNDERSTANDING</div>
+            <div class="resolution-bubble" id="resolution-text"></div></div>`;
+}
+
+function normalizeContinuationAnswer(value, index) {
+    if (!value || !scenario[index]) return null;
+    const option = getAllSceneOptions(scenario[index]).find(item =>
+        item.id === value || item.t === value
+    );
+    return option ? option.id : null;
+}
+
+function startChosenContinuation() {
+    if (!continuationPoints.includes(continueSceneIndex)) return false;
+    if (!recollectionProgress.gameCleared) return false;
+    const index = continueSceneIndex;
+    const source = getContinuationSource();
+    if (index !== 0 && !source) return false;
+    const snapshot = source ? source.snapshot : null;
+    const knowledge = getContinuationKnownKeys(continueKnowledgeMode, index, source);
+
+    if (index === 0) {
+        closeContinueSetup();
+        restoreContinuationDisplay();
+        startGame(false);
+        applyContinuationKnowledge(knowledge, snapshot, index);
+        runMode = "recollection";
+        for (const id of ["device-check-overlay", "intro-overlay", "tutorial-overlay", "load-overlay"]) {
+            const element = document.getElementById(id);
+            if (element) element.style.display = "none";
+        }
+        switchMainView("play");
+        updateUI(true);
+        return true;
+    }
+
+    notebookChecks = {};
+    notebookHintLevels = {};
+    finalReviewOpen = false;
+    selectedAnswers = new Array(scenario.length).fill(null);
+    sceneChoiceRecords = new Array(scenario.length).fill(null);
+    const pastAnswers = snapshot?.selectedAnswers || [];
+    const pastRecords = Array.isArray(snapshot?.sceneChoiceRecords)
+        ? snapshot.sceneChoiceRecords : [];
+    for (let i = 0; i < index; i++) {
+        const id = normalizeContinuationAnswer(pastAnswers[i], i);
+        selectedAnswers[i] = id;
+        const record = pastRecords[i];
+        if (id && record && typeof record === "object" && record.optionId === id) {
+            sceneChoiceRecords[i] = {
+                ...record,
+                wordStates: { ...(record.wordStates || {}) },
+                guesses: { ...(record.guesses || {}) }
+            };
+        }
+    }
+
+    runMode = "recollection";
+    currentStep = index;
+    viewingStep = index;
+    interactionPhase = "conversation";
+    pendingOption = null;
+    pendingResolvedKeys = [];
+    pendingFinalLine = "";
+    pendingChoiceContext = null;
+    vaneKnownWords = new Set();
+    vaneUnderstoodAt = {};
+    masteredWords = getMasteredWordSet();
+    activeDictKey = null;
+    mainViewMode = "play";
+    restoreContinuationDisplay();
+    initDict({});
+    applyContinuationKnowledge(knowledge, snapshot, index);
+    if (continueKnowledgeMode === "memory" && source &&
+        typeof restoreNotebookGuessesBeforeScene === "function") {
+        restoreNotebookGuessesBeforeScene(snapshot, index, "memory");
+    }
+
+    wordSeenCounts = {};
+    seenSceneIds = new Set();
+    for (let i = 0; i <= index; i++) registerSceneWords(i);
+    rebuildRunState();
+
+    closeContinueSetup();
+    for (const id of ["intro-overlay", "tutorial-overlay", "load-overlay", "device-check-overlay"]) {
+        document.getElementById(id).style.display = "none";
+    }
+    document.getElementById("game-container").style.display = "flex";
+    switchMainView("play");
+    renderTabs();
+    updateUI(true);
+    renderPastLog();
+    renderWordList();
+    const display = document.getElementById("display");
+    if (display) display.scrollTop = 0;
+    return true;
+}
+
+function applyContinuationKnowledge(keys, snapshot, startIndex) {
+    const allowed = new Set(getMasteredWordSet());
+    const wanted = [...new Set(keys)].filter(key => allowed.has(key) && wordBank[key]);
+    vaneKnownWords = new Set(wanted);
+    vaneUnderstoodAt = {};
+    const oldAt = snapshot?.vaneUnderstoodAt || {};
+    for (const key of wanted) {
+        const hadEarlierKnowledge = Object.prototype.hasOwnProperty.call(oldAt, key);
+        const at = hadEarlierKnowledge ? Number(oldAt[key]) : NaN;
+        vaneUnderstoodAt[key] = Number.isFinite(at) && at < startIndex
+            ? at : startIndex - 1;
+        userDict[key] = wordBank[key].canonical;
+    }
+    renderDictPlaceholder();
+    renderPastLog();
+    renderWordList();
+}
+
+function openOneYearAfter() {
+    if (!recollectionProgress.finalRecollectionUnlocked) return false;
+    if (typeof startFinalRecollectionFromUI !== "function") return false;
+    return startFinalRecollectionFromUI();
+}
+
+function syncOneYearUnlockUI() {
+    const unlocked = Boolean(recollectionProgress?.finalRecollectionUnlocked);
+    const button = document.getElementById("one-year-entry-btn");
+    const continueButton = document.getElementById("recollection-entry-btn");
+    if (button) {
+        button.style.display = unlocked && continueButton?.style.display !== "none" ? "inline-block" : "none";
+    }
+    document.documentElement.classList.toggle("one-year-unlocked", unlocked);
+    updateColUI();
+}
+
+let activeGameModalAction = null;
+let gameModalReturnFocus = null;
+function closeGameModal(confirmed = false) {
+    const overlay = document.getElementById("game-modal-overlay");
+    if (!overlay || overlay.style.display === "none") return;
+    const action = confirmed ? activeGameModalAction : null;
+    activeGameModalAction = null;
+    overlay.style.display = "none";
+    overlay.setAttribute("aria-hidden", "true");
+    overlay.classList.remove("one-year-modal");
+    if (gameModalReturnFocus?.isConnected) gameModalReturnFocus.focus();
+    gameModalReturnFocus = null;
+    if (action) action();
+}
+function showGameModal({ title, message, confirmText = "確認", cancelText = "キャンセル", onConfirm = null, announcement = false }) {
+    const overlay = document.getElementById("game-modal-overlay");
+    const confirmButton = document.getElementById("game-modal-confirm");
+    const cancelButton = document.getElementById("game-modal-cancel");
+    if (!overlay || !confirmButton || !cancelButton) return false;
+    gameModalReturnFocus = document.activeElement;
+    document.getElementById("game-modal-title").textContent = title;
+    document.getElementById("game-modal-message").textContent = message;
+    confirmButton.textContent = confirmText;
+    cancelButton.textContent = cancelText;
+    cancelButton.style.display = announcement ? "none" : "inline-block";
+    activeGameModalAction = onConfirm;
+    overlay.classList.toggle("one-year-modal", announcement);
+    overlay.style.display = "flex";
+    overlay.setAttribute("aria-hidden", "false");
+    confirmButton.onclick = () => closeGameModal(true);
+    cancelButton.onclick = () => closeGameModal(false);
+    confirmButton.focus();
+    return true;
+}
+function announceOneYearUnlock() {
+    syncOneYearUnlockUI();
+    return showGameModal({
+        title: "「1年後」が解放されました",
+        message: "END 01〜06をすべて解放しました。タイトル画面の「つづきから」の下に現れた「1年後」から、最後の物語を読めます。",
+        confirmText: "閉じる",
+        announcement: true
+    });
+}
+document.getElementById("game-modal-overlay").addEventListener("keydown", event => {
+    if (event.key === "Escape") {
+        event.preventDefault();
+        closeGameModal(false);
+    }
+    if (event.key === "Tab") {
+        // モーダルが開いている間はフォーカスをモーダル内に閉じ込める。
+        const buttons = [...document.querySelectorAll("#game-modal-overlay .game-modal-actions button")]
+            .filter(button => button.style.display !== "none");
+        if (!buttons.length) return;
+        const current = buttons.indexOf(document.activeElement);
+        if (event.shiftKey && current <= 0) {
+            event.preventDefault(); buttons[buttons.length - 1].focus();
+        } else if (!event.shiftKey && current === buttons.length - 1) {
+            event.preventDefault(); buttons[0].focus();
+        }
+    }
+});
+
+function getEndingGalleryCollectedIds() {
+    const ids = new Set();
+    try {
+        const stored = JSON.parse(localStorage.getItem("vane_collection_v3") || "[]");
+        if (Array.isArray(stored)) {
+            stored.forEach(raw => {
+                const id = Number(raw);
+                if (Number.isInteger(id) && id >= 1 && id <= 7) ids.add(id);
+            });
+        }
+    } catch (e) { }
+    if (typeof recollectionProgress !== "undefined") {
+        (recollectionProgress.collectedNormalEndings || []).forEach(raw => {
+            const id = Number(raw);
+            if (Number.isInteger(id) && id >= 1 && id <= 6) ids.add(id);
+        });
+    }
+    return ids;
+}
+function getEndingGalleryAvailableIds() {
+    const ids = getEndingGalleryCollectedIds();
+    if (typeof recollectionProgress !== "undefined") {
+        for (const id of recollectionProgress.purchasedEndingIds || []) {
+            if (Number(id) >= 1 && Number(id) <= 6) ids.add(Number(id));
+        }
+        // END 07はカギを使わず、通常エンディング6種の解放で自動開放する。
+        if (recollectionProgress.finalRecollectionUnlocked) ids.add(7);
+        else ids.delete(7);
+    }
+    return ids;
+}
+function openEndingGallery() {
+    if (!getEndingGalleryAvailableIds().size) return;
+    const overlay = document.getElementById("ending-gallery-overlay");
+    if (!overlay) return;
+    overlay.style.display = "flex";
+    overlay.setAttribute("aria-hidden", "false");
+    showEndingGalleryList();
+    document.getElementById("ending-gallery-title")?.focus();
+}
+function showEndingGalleryList() {
+    const reached = getEndingGalleryCollectedIds();
+    const available = getEndingGalleryAvailableIds();
+    const list = document.getElementById("ending-gallery-list");
+    const balance = document.getElementById("ending-gallery-keys");
+    if (!list || !balance) return;
+    const keys = recollectionProgress.voiceKeys;
+    balance.textContent = `所持カギ：${keys}個 ／ 解放に必要なカギ：${ENDING_UNLOCK_COST}個`;
+    list.replaceChildren();
+    for (let id = 1; id <= 6; id++) {
+        const isAvailable = available.has(id);
+        const item = document.createElement("div");
+        item.className = "ending-gallery-item";
+
+        const info = document.createElement("div");
+        info.className = "ending-gallery-info";
+        const number = document.createElement("span");
+        number.className = "ending-gallery-number";
+        number.textContent = `END ${String(id).padStart(2, "0")}`;
+        const name = document.createElement("span");
+        name.className = "ending-gallery-name";
+        name.textContent = isAvailable ? endingsData[id].title : "？？？";
+        const state = document.createElement("span");
+        state.className = "ending-gallery-state";
+        state.textContent = isAvailable ? (reached.has(id) ? "到達済み" : "カギで解放済み")
+            : "未解放";
+        info.append(number, name, state);
+
+        const replay = document.createElement("button");
+        replay.type = "button";
+        replay.className = "ending-gallery-open";
+        replay.dataset.endingOpen = String(id);
+        replay.textContent = "再生";
+        replay.disabled = !isAvailable;
+        replay.title = isAvailable ? `END ${String(id).padStart(2, "0")}を再生` : "未解放です";
+        replay.onclick = () => readEndingFromGallery(id);
+
+        const unlock = document.createElement("button");
+        unlock.type = "button";
+        unlock.className = "ending-gallery-unlock";
+        unlock.dataset.endingUnlock = String(id);
+        unlock.textContent = "解放";
+        unlock.disabled = isAvailable || keys < ENDING_UNLOCK_COST;
+        unlock.title = isAvailable ? "解放済みです"
+            : keys < ENDING_UNLOCK_COST ? "カギが足りません"
+            : `カギ${ENDING_UNLOCK_COST}個で解放`;
+        unlock.onclick = () => unlockEndingFromGallery(id);
+
+        item.append(info, replay, unlock);
+        list.appendChild(item);
+    }
+    document.getElementById("ending-gallery-panel").scrollTop = 0;
+}
+function unlockEndingFromGallery(id) {
+    if (!Number.isInteger(id) || id < 1 || id > 6) return;
+    showGameModal({
+        title: `END ${String(id).padStart(2, "0")}を解放しますか？`,
+        message: `エンディング解放カギを${ENDING_UNLOCK_COST}個消費します。`,
+        confirmText: "解放する",
+        onConfirm: () => performEndingGalleryUnlock(id)
+    });
+}
+function performEndingGalleryUnlock(id) {
+    const result = spendEndingUnlockKeys(id);
+    const status = document.getElementById("ending-gallery-status");
+    if (!result.ok) {
+        if (status) status.textContent = result.reason === "not-enough-keys"
+            ? "カギが足りません。"
+            : result.reason === "normal-endings-locked"
+                ? "END 07は、END 01〜06をすべて解放すると解放できるようになります。"
+                : "このエンディングは解放できません。";
+        showEndingGalleryList();
+        return;
+    }
+    showEndingGalleryList();
+    if (status) status.textContent = `END ${String(id).padStart(2, "0")}を解放しました。カギを${result.spent}個消費しました。`;
+    syncOneYearUnlockUI();
+    if (result.finalRecollectionUnlockedNow) announceOneYearUnlock();
+    else document.querySelector(`[data-ending-open="${id}"]`)?.focus();
+}
+function readEndingFromGallery(id) {
+    if (!getEndingGalleryAvailableIds().has(id) || !endingsData[id] || typeof endingBodies[id] !== "string") return;
+    renderEndingScreen(id, null, true);
+}
+function closeEndingGallery() {
+    const overlay = document.getElementById("ending-gallery-overlay");
+    if (!overlay) return;
+    overlay.style.display = "none";
+    overlay.setAttribute("aria-hidden", "true");
+    document.getElementById("ending-gallery-entry-btn")?.focus();
+}
+function openNotice() {
+    const overlay = document.getElementById("notice-overlay");
+    if (!overlay) return;
+    overlay.style.display = "flex";
+    overlay.setAttribute("aria-hidden", "false");
+    document.getElementById("notice-title")?.focus?.();
+}
+function closeNotice() {
+    const overlay = document.getElementById("notice-overlay");
+    if (!overlay) return;
+    overlay.style.display = "none";
+    overlay.setAttribute("aria-hidden", "true");
+    document.getElementById("notice-entry-btn")?.focus();
+}
+</script>
+</body>
+</html>

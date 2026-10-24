@@ -9,9 +9,9 @@
 :root{--main:#7897a5;--main-dark:#506c78;--main-soft:#edf3f5;--main-pale:#f5f8f9;--text:#394b53;--text-soft:#687b84;--muted:#8b9aa1;--muted-light:#aab5ba;--line:#d9e2e6;--line-strong:#c5d2d8;--surface:#fff;--surface-soft:#f7f9fa;--surface-hover:#f0f5f6;--correct:#587887;--wrong:#ad7070;--opt-bg:#fff;--opt-hover:#f1f5f6;--selected:#eaf1f4;--love-hue:200;--love-light:92%;--love-sat:20%;--gold:#7897a5;--note-bg:#f1f6f4;--note-surface:#fbfdfc;--note-line:#ceddd8;--note-soft:#e7f0ed;--note-active:#dceee9;--note-text:#48625c}
 body{background:#edf3f5;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Kaku Gothic ProN","Yu Gothic","YuGothic",Meiryo,sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;color:var(--text);overflow:hidden}
 #bg-layer{position:fixed;inset:0;background:radial-gradient(circle at 20% 15%,rgba(255,255,255,.95) 0%,rgba(255,255,255,0) 38%),linear-gradient(135deg,#edf3f5 0%,#f7f9fa 48%,#e9f0f2 100%);z-index:-1;transition:2s ease}
-#device-check-overlay,#intro-overlay,#tutorial-overlay,#load-overlay{position:fixed;inset:0;background:rgba(244,248,249,.98);display:flex;justify-content:center;align-items:center;text-align:center;color:var(--text)}
+#device-check-overlay,#intro-overlay,#tutorial-overlay{position:fixed;inset:0;background:rgba(244,248,249,.98);display:flex;justify-content:center;align-items:center;text-align:center;color:var(--text)}
 #device-check-overlay{z-index:200}
-#intro-overlay,#tutorial-overlay,#load-overlay{z-index:100;display:none}
+#intro-overlay,#tutorial-overlay{z-index:100;display:none}
 .device-box{width:min(520px,82vw);border:1px solid var(--line);padding:42px;border-radius:16px;background:rgba(255,255,255,.96);box-shadow:0 18px 55px rgba(68,91,101,.10)}
 .content-box{max-width:700px;width:90%;line-height:2.05;max-height:90vh;overflow-y:auto;padding:30px;box-sizing:border-box}
 .title-image{display:block;width:min(620px,92%);height:auto;margin:0 auto 28px}
@@ -296,12 +296,6 @@ html.one-year-unlocked #device-check-overlay .device-box{border-color:#e7b47c;bo
 エンディングは全てハッピーエンドです。</p>
 </div>
 <button id="start-init-btn" class="btn-style" style="background:var(--main);color:#fff">物語を開始する</button>
-</div></div>
-<div id="load-overlay"><div class="content-box">
-<h2 style="color:var(--main-dark)">ヴェインの記憶</h2>
-<p>過去のノートを引き継ぎますか？</p>
-<button id="load-yes" class="btn-style" style="background:var(--main);color:#fff">引き継ぐ</button>
-<button id="load-no" class="btn-style" style="background:var(--main-dark);color:#fff">最初から解く</button>
 </div></div>
 <div id="understanding-flash" aria-hidden="true"><div class="understanding-flash-inner">
 <div class="understanding-flash-label">UNDERSTANDING</div>
@@ -784,10 +778,6 @@ function persistMasteredWord(key) {
         "vane_solved_words",
         JSON.stringify(solved)
     );
-}
-
-function hasCompatibleSavedWords() {
-    return getMasteredWordSet().size > 0;
 }
 
 function sceneContainsWord(text, key) {
@@ -1366,25 +1356,7 @@ window.onload = () => {
         ).style.display = "flex";
     };
 
-    document.getElementById("start-init-btn").onclick = () => {
-        if (hasCompatibleSavedWords()) {
-            document.getElementById(
-                "tutorial-overlay"
-            ).style.display = "none";
-
-            document.getElementById(
-                "load-overlay"
-            ).style.display = "flex";
-        } else {
-            startGame(false);
-        }
-    };
-
-    document.getElementById("load-yes").onclick =
-        () => startGame(true);
-
-    document.getElementById("load-no").onclick =
-        () => startGame(false);
+    document.getElementById("start-init-btn").onclick = () => startGame();
 
     try {
         const saved = JSON.parse(
@@ -1411,16 +1383,12 @@ window.onload = () => {
     switchMainView("play");
 };
 
-function startGame(inherit) {
+function startGame() {
     currentStep = 0;
     viewingStep = 0;
 
     document.getElementById(
         "tutorial-overlay"
-    ).style.display = "none";
-
-    document.getElementById(
-        "load-overlay"
     ).style.display = "none";
 
     document.getElementById(
@@ -1456,7 +1424,7 @@ function startGame(inherit) {
 
     rebuildRunState();
 
-    initDict(inherit ? getSavedWords() : {});
+    initDict({});
 
     registerSceneWords(currentStep);
     renderTabs();
@@ -2385,10 +2353,10 @@ function startChosenContinuation() {
     if (index === 0) {
         closeContinueSetup();
         restoreContinuationDisplay();
-        startGame(false);
+        startGame();
         applyContinuationKnowledge(knowledge, snapshot, index);
         runMode = "recollection";
-        for (const id of ["device-check-overlay", "intro-overlay", "tutorial-overlay", "load-overlay"]) {
+        for (const id of ["device-check-overlay", "intro-overlay", "tutorial-overlay"]) {
             const element = document.getElementById(id);
             if (element) element.style.display = "none";
         }
@@ -2445,7 +2413,7 @@ function startChosenContinuation() {
     rebuildRunState();
 
     closeContinueSetup();
-    for (const id of ["intro-overlay", "tutorial-overlay", "load-overlay", "device-check-overlay"]) {
+    for (const id of ["intro-overlay", "tutorial-overlay", "device-check-overlay"]) {
         document.getElementById(id).style.display = "none";
     }
     document.getElementById("game-container").style.display = "flex";

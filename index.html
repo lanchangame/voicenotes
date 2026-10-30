@@ -173,6 +173,13 @@ body{background:#edf3f5;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",
 #ending-reader-body{color:var(--text);font-size:1.02rem;line-height:2.25;text-align:left;overflow-wrap:anywhere}
 #ending-reader-notes{margin-top:36px;font-size:.94rem;line-height:1.9}
 .ending-reader-actions{text-align:center;margin-top:36px;padding-top:28px;border-top:1px solid var(--line)}
+/* エンディング読了後のX感想投稿案内 */
+.ending-reader-share{margin-top:34px;padding:24px 16px 2px;text-align:center;border-top:1px solid var(--line)}
+.ending-reader-share p{margin:0 0 16px;color:var(--text-soft);font-size:.91rem;line-height:1.8}
+.ending-reader-share a{display:inline-block;box-sizing:border-box;padding:12px 28px;border:1px solid var(--main);border-radius:8px;background:var(--main);color:#fff;font-family:inherit;font-size:.94rem;font-weight:700;line-height:1.5;text-decoration:none;transition:.2s}
+.ending-reader-share a:hover{filter:brightness(.96);transform:translateY(-1px)}
+.ending-reader-share a:focus-visible{outline:3px solid var(--main-dark);outline-offset:3px}
+
 .ending-reader-actions .btn-style{background:var(--main);color:#fff;margin:0}
 @media(max-width:700px){.ending-reader-page{padding:0}.ending-reader-paper{min-height:100vh;min-height:100dvh;border:0;border-radius:0;padding:28px 22px 44px;box-shadow:none}.ending-reader-rule{margin-bottom:28px}#ending-reader-body{font-size:.97rem;line-height:2.1}}
 
@@ -369,6 +376,10 @@ html.one-year-unlocked #device-check-overlay .device-box{border-color:#e7b47c;bo
       <div class="ending-reader-rule" aria-hidden="true"></div>
       <div id="ending-reader-body"></div>
       <div id="ending-reader-notes"></div>
+      <section class="ending-reader-share" aria-label="感想を投稿する">
+        <p>よろしければ感想をつぶやいてください！</p>
+        <a id="ending-reader-share-link" href="https://x.com/intent/tweet" target="_blank" rel="noopener noreferrer" aria-label="Xでエンディングの感想を投稿する">Xに投稿する</a>
+      </section>
       <div class="ending-reader-actions">
         <button type="button" id="ending-reader-return" class="btn-style" onclick="returnFromEndingReader()">タイトルへ</button>
       </div>

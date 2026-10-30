@@ -204,6 +204,23 @@ function saveEndingCollection() {
 
 
 
+function getEndingShareUrl(id, endingTitle, fromGallery) {
+    const endNumber = String(id).padStart(2, "0");
+    const message = fromGallery ? "を読みました！" : "に到達しました！";
+    const text = `『声を聴かせて、ランスロット！』でEND${endNumber}「${endingTitle}」${message} https://vanenotes.lanchangame.com`;
+    const intent = new URL("https://x.com/intent/tweet");
+    intent.searchParams.set("text", text);
+    intent.searchParams.set("hashtags", "声を聴かせてランスロット");
+
+    if (location.protocol === "https:" || location.protocol === "http:") {
+        const gameUrl = new URL(location.href);
+        gameUrl.search = "";
+        gameUrl.hash = "";
+        intent.searchParams.set("url", gameUrl.href);
+    }
+    return intent.href;
+}
+
 function renderEndingScreen(id, progressResult = null, fromGallery = false) {
     const ending = endingsData[id];
     const body = endingBodies[id];
@@ -286,6 +303,8 @@ function renderEndingScreen(id, progressResult = null, fromGallery = false) {
     title.textContent = ending.title;
     story.innerHTML = body;
     notes.innerHTML = fromGallery ? "" : progressHtml + hintHtml;
+    const shareLink = document.getElementById("ending-reader-share-link");
+    if (shareLink) shareLink.href = getEndingShareUrl(id, ending.title, fromGallery);
     returnButton.textContent = fromGallery ? "一覧へ戻る" : "タイトルへ";
     overlay.dataset.fromGallery = fromGallery ? "true" : "false";
     overlay.classList.toggle("ending-final", id === 7);
